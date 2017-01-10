@@ -1,0 +1,16 @@
+*.project
+*.classpath
+*.class
+*.DS_Store
+*.txt
+*.out
+*.log
+.settings/
+bin/
+out/
+logs/
+resource/project/
+resource/mml/*.bin
+resource/mml/spec.mml
+resource/mm/*.cpgz
+SBFL.jar
