@@ -250,10 +250,14 @@ public class Collector {
 		Instrument.execute(_testSRCPath, new StatementInstrumentVisitor(Constant.INSTRUMENT_TEST));
 		
 		Set<Method> allExecutedMethods = new HashSet<>();
+		Set<Integer> allMethodID = new HashSet<>();
 		for(TestMethod testMethod : failedTestMethods){
 			for(ExecutedMethod executedMethod : testMethod.getExecutionPath()){
-				allExecutedMethods.add(new Method(executedMethod.getMethodID()));
+				allMethodID.add(executedMethod.getMethodID());
 			}
+		}
+		for(Integer integer : allMethodID){
+			allExecutedMethods.add(new Method(integer));
 		}
 		StateCollectInstrumentVisitor stateCollectInstrumentVisitor = new StateCollectInstrumentVisitor(Constant.INSTRUMENT_SOURCE, _dynamicRuntimeInfo);
 		stateCollectInstrumentVisitor.setAllMethods(allExecutedMethods);
@@ -380,6 +384,7 @@ public class Collector {
 			return;
 		}
 		Set<Method> collectMethods = new HashSet<>();
+		Set<Integer> allMethodIDs = new HashSet<>();
 		for(File failedTestFolder : root.listFiles()){
 			if(!failedTestFolder.isDirectory()){
 				LevelLogger.error("collectAllPassedTestState failed test root path is not a directory : " + failedTestFolder.getAbsolutePath());
@@ -388,9 +393,11 @@ public class Collector {
 			for(File watchMethod : failedTestFolder.listFiles()){
 				String watchName = watchMethod.getName();
 				int id = Identifier.getIdentifier(watchName);
-				Method method = new Method(id);
-				collectMethods.add(method);
+				allMethodIDs.add(id);
 			}
+		}
+		for(Integer integer : allMethodIDs){
+			collectMethods.add(new Method(integer));
 		}
 		
 		StateCollectInstrumentVisitor stateCollectInstrumentVisitor = new StateCollectInstrumentVisitor(Constant.INSTRUMENT_SOURCE, _dynamicRuntimeInfo);

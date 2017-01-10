@@ -14,7 +14,7 @@ public class Main {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String began = df.format(new Date());
 		System.out.println("Start time : " + began);
-		
+	
 		if (args.length < 2) {
 			LevelLogger.error("arguments error!");
 			return;

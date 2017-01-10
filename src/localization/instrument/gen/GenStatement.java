@@ -188,7 +188,11 @@ public class GenStatement {
 		// if(variable == null){ System.out.println("message
 		// variable_null_method null"); }
 		StringLiteral stringLiteral = ast.newStringLiteral();
-		stringLiteral.setLiteralValue(message + "#" + variable + "_null_" + method + "#null");
+		if(prefix == null){
+			stringLiteral.setLiteralValue(message + "#" + variable + "_null_" + method + "#null");
+		} else {
+			stringLiteral.setLiteralValue(message + "#" + prefix + "." + variable + "_null_" + method + "#null");
+		}
 		Statement printNullStatement = genPrinter(stringLiteral);
 		Block thenBlock = ast.newBlock();
 		thenBlock.statements().add(printNullStatement);
