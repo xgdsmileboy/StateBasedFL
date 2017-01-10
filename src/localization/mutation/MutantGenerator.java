@@ -214,7 +214,9 @@ public class MutantGenerator {
 
 	private static Mutant getMutant(File oriFile, File mutFile) throws IOException {
 		LevelLogger.debug("Get mutant from " + mutFile.getPath());
-		
+		if(!oriFile.exists() || !mutFile.exists()){
+			return null;
+		}
 		ArrayList<String> mutFileContent = new ArrayList<String>();
 		ArrayList<String> oriFileContent = new ArrayList<String>();
 		BufferedReader mutReader = new BufferedReader(new FileReader(mutFile));
