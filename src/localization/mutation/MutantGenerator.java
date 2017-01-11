@@ -185,6 +185,10 @@ public class MutantGenerator {
 				LevelLogger.error("Format error in mutants.log " + mutantsID.get(i));
 				return null;
 			}
+			if(parts[0].contains("$")){
+				LevelLogger.error("Parse anonymous class path : " + currentMethod);
+				parts[0] = parts[0].substring(0, parts[0].lastIndexOf("$"));
+			}
 			String mutantFilePath = parts[0].replace('.', '/') + ".java";
 			String subPath = Integer.toString(i + 1) + "/" + mutantFilePath;
 			File mutantFile = new File(prefix + subPath);
