@@ -87,13 +87,10 @@ public class InsertVariableGenerator {
 					continue;
 				}
 				//non-static function should add class name to reach the static field
-				if (Modifier.isStatic(field.getModifiers()) && !Modifier.isStatic(_methodDeclaration.getModifiers())) {
+				if (Modifier.isStatic(field.getModifiers())) {
 					prefix = typeDeclaration.getName().getFullyQualifiedName();
 				}
 				
-				if (Modifier.isStatic(field.getModifiers()) && Modifier.isStatic(_methodDeclaration.getModifiers())) {
-					prefix = "";
-				}
 				Type type = field.getType();
 				List<ASTNode> variables = field.fragments();
 				for (ASTNode astNode : variables) {
