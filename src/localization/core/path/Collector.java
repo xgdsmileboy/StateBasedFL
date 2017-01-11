@@ -96,6 +96,7 @@ public class Collector {
 			boolean isNewLine = true;
 			String newLine = System.getProperty("line.separator");
 			StringBuffer lastStringBuffer = new StringBuffer();
+			int lastMethodID = 0;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
 				if (!line.startsWith("[junit] ")) {
@@ -106,9 +107,18 @@ public class Collector {
 					if(isNewLine){
 						lastStringBuffer.append(newLine);
 						isNewLine = false;
+						if(lastStringBuffer.toString().length() > 1000){
+							String methodString = Identifier.getMessage(lastMethodID);
+							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+							String message = lastStringBuffer.toString() + System.getProperty("line.separator");
+							JavaFile.writeStringToFile(filePath, message, true);
+							lastStringBuffer = new StringBuffer();
+							allStates.put(lastMethodID, lastStringBuffer);
+						}
 					}
 					continue;
 				}
+				isNewLine = true;
 				if (line.startsWith("[INST]T")) {
 					continue;
 				}
@@ -124,17 +134,19 @@ public class Collector {
 				if(info.length == 4){
 					value = info[3];
 				}
-				isNewLine = true;
+				
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
 					sBuffer.append(info[2] + ":" + value + " ");
 					lastStringBuffer = sBuffer;
+					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 					sBuffer.append(info[2] + ":" + value + " ");
 					allStates.put(integer, sBuffer);
 					lastStringBuffer = sBuffer;
+					lastMethodID = integer;
 				}
 			}
 			bufferedReader.close();
@@ -174,6 +186,7 @@ public class Collector {
 			boolean isNewLine = true;
 			String newLine = System.getProperty("line.separator");
 			StringBuffer lastStringBuffer = new StringBuffer();
+			Integer lastMethodID = 0;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
 				if (!line.startsWith("[junit] ")) {
@@ -184,9 +197,19 @@ public class Collector {
 					if(isNewLine){
 						lastStringBuffer.append(newLine);
 						isNewLine = false;
+						//to avoid memory overload
+						if(lastStringBuffer.toString().length() > 1000){
+							String methodString = Identifier.getMessage(lastMethodID);
+							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+							String message = lastStringBuffer.toString() + System.getProperty("line.separator");
+							JavaFile.writeStringToFile(filePath, message, true);
+							lastStringBuffer = new StringBuffer();
+							allStates.put(lastMethodID, lastStringBuffer);
+						}
 					}
 					continue;
 				}
+				isNewLine = true;
 				if (line.startsWith("[INST]T")) {
 					String[] info = line.split("#");
 					if(info.length >= 2){
@@ -206,18 +229,20 @@ public class Collector {
 				if(info.length == 4){
 					value = info[3];
 				}
-				isNewLine = true;
+				
 				collectStateMethod.add(currentTest);
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
 					sBuffer.append(info[2] + ":" + value+ " ");
 					lastStringBuffer = sBuffer;
+					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 					sBuffer.append(info[2] + ":" + value + " ");
 					allStates.put(integer, sBuffer);
 					lastStringBuffer = sBuffer;
+					lastMethodID = integer;
 				}
 			}
 			bufferedReader.close();
@@ -240,7 +265,7 @@ public class Collector {
 			}
 			String methodString = Identifier.getMessage(entry.getKey());
 			String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-			String message = sBuffer.toString().trim() + System.getProperty("line.separator");
+			String message = sBuffer.toString() + System.getProperty("line.separator");
 			JavaFile.writeStringToFile(filePath, message, true);
 		}
 		return collectStateMethod;
@@ -280,7 +305,6 @@ public class Collector {
 //		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 		return allExecutedMethods;
 	}
-	
 	
 	private void backupFailedTest(List<TestMethod> allFailedTestMethods){
 		Set<Method> allTestMethod = new HashSet<>();
@@ -512,7 +536,6 @@ public class Collector {
 		return allFailedTestMethods;
 	}
 	
-	
 	private void collectNegativeStateIntoFile(String sourceFile, String targetFileContainer){
 		File file = new File(sourceFile);
 		Map<Integer, StringBuffer> allStates = new HashMap<>();
@@ -547,7 +570,7 @@ public class Collector {
 					}
 					continue;
 				}
-				
+				isNewLine = true;
 				if(!canCollectData){
 					continue;
 				}
@@ -561,7 +584,7 @@ public class Collector {
 				if(info.length == 4){
 					value = info[3];
 				}
-				isNewLine = true;
+				
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
