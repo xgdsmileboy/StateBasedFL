@@ -110,7 +110,7 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 		boolean needInstrument = false;
 		if(_allMethods != null){
 			for(Method method : _allMethods){
-				if (method.match(node)) {
+				if (method.match(node, _clazzName)) {
 					needInstrument = true;
 					break;
 				}

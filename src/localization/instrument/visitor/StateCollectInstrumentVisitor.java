@@ -97,14 +97,14 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 	@Override
 	public boolean visit(MethodDeclaration node) {
 
-		if (_method != null && !_method.match(node)) {
+		if (_method != null && !_method.match(node, _clazzName)) {
 			return true;
 		}
 		
 		if(_allMethods != null){
 			boolean needInstrument = false;
 			for(Method method : _allMethods){
-				if (method.match(node)) {
+				if (method.match(node, _clazzName)) {
 					needInstrument = true;
 					break;
 				}
