@@ -24,6 +24,11 @@ public class ExecuteCommand {
 		return execute(cmd);
 	}
 	
+	public static String moveFolder(String source, String target){
+		String[] cmd = new String[]{"/bin/bash", "-c", Constant.COMMAND_MV + "-f " + source + " " + target};
+		return execute(cmd);
+	}
+	
 	public static String copyFile(String source, String target){
 		String[] cmd = new String[]{"/bin/bash", "-c", Constant.COMMAND_CP + source + " " + target};
 		return execute(cmd);
@@ -40,7 +45,7 @@ public class ExecuteCommand {
 	}
 	
 	public static String deleteTmpFiles() {
-		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_TMP_PATH };
+		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_MUTATION_POINT_PATH };
 		return execute(cmd);
 	}
 

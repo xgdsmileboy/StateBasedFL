@@ -41,7 +41,7 @@ public class Constant {
 	public final static String STR_POSITIVE_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/positive";
 	public final static String STR_FAILED_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/failed";
 
-	public final static String STR_TMP_PATH = STR_OUT_PATH + "/mutation";
+	public final static String STR_MUTATION_POINT_PATH = STR_OUT_PATH + "/mutation";
 	public static String STR_MML_CONFIG_FILE = "";
 
 	//mutation configuration
