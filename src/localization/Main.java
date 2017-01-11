@@ -4,8 +4,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
 import localization.common.util.ExecuteCommand;

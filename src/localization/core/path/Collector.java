@@ -113,7 +113,7 @@ public class Collector {
 					continue;
 				}
 				if (!line.startsWith("[INST]M")) {
-					break;
+					continue;
 				}
 				String[] info = line.split("#");
 				String value = "";
@@ -246,7 +246,7 @@ public class Collector {
 		return collectStateMethod;
 	}
 	
-	private void collectAllFailedTestState(List<TestMethod> failedTestMethods){
+	private Set<Method> collectAllFailedTestState(List<TestMethod> failedTestMethods){
 		Instrument.execute(_testSRCPath, new StatementInstrumentVisitor(Constant.INSTRUMENT_TEST));
 		
 		Set<Method> allExecutedMethods = new HashSet<>();
@@ -275,7 +275,10 @@ public class Collector {
 			collectStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, testDataFile, testMethod.getTestStatementNumber(), 0);
 		}
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
-		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
+		// this state collecting instrument can be reused for collecting positive state, which can reduce the de/instrument cost
+		// even though it may hard to understand and maintain
+//		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
+		return allExecutedMethods;
 	}
 	
 	
@@ -376,39 +379,15 @@ public class Collector {
 		return allPassedTestWithFullClazzPath;
 	}
 	
-	private void collectAllPositiveAndNegativeState(){
-		String failedTestFilePath = Constant.STR_FAILED_DATA_COLLECT_PATH;
-		File root = new File(failedTestFilePath);
-		if(!root.exists()){
-			LevelLogger.error("There is no failed test state data.");
-			return;
-		}
-		Set<Method> collectMethods = new HashSet<>();
-		Set<Integer> allMethodIDs = new HashSet<>();
-		for(File failedTestFolder : root.listFiles()){
-			if(!failedTestFolder.isDirectory()){
-				LevelLogger.error("collectAllPassedTestState failed test root path is not a directory : " + failedTestFolder.getAbsolutePath());
-				continue;
-			}
-			for(File watchMethod : failedTestFolder.listFiles()){
-				String watchName = watchMethod.getName();
-				int id = Identifier.getIdentifier(watchName);
-				allMethodIDs.add(id);
-			}
-		}
-		for(Integer integer : allMethodIDs){
-			collectMethods.add(new Method(integer));
-		}
-		
-		StateCollectInstrumentVisitor stateCollectInstrumentVisitor = new StateCollectInstrumentVisitor(Constant.INSTRUMENT_SOURCE, _dynamicRuntimeInfo);
-		stateCollectInstrumentVisitor.setAllMethods(collectMethods);
-		Instrument.execute(_sourceSRCPath, stateCollectInstrumentVisitor);
+	private void collectAllPositiveAndNegativeState(Set<Method> collectMethods){
+		//in the state collecting process of failed test, the state collector has been instrumented, here we can reuse
 		Instrument.execute(_testSRCPath, new MethodInstrumentVisitor(Constant.INSTRUMENT_TEST));
 		
 		LevelLogger.info("collecting positive states ...");
 		//begin to collect positive state
 		ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo), Constant.STR_TMP_OUTPUT_FILE);
 		Set<Integer> collectStateMethods = collectPositiveStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, Constant.STR_POSITIVE_DATA_COLLECT_PATH);
+		//remove state collect instrument
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 		//end collect positive state
 		
@@ -438,6 +417,8 @@ public class Collector {
 		
 		StatementInstrumentVisitor statementInstrumentVisitor = new StatementInstrumentVisitor(Constant.INSTRUMENT_TEST);
 		Instrument.execute(_testSRCPath, statementInstrumentVisitor);
+		StateCollectInstrumentVisitor stateCollectInstrumentVisitor = new StateCollectInstrumentVisitor(Constant.INSTRUMENT_SOURCE, _dynamicRuntimeInfo);
+		stateCollectInstrumentVisitor.setAllMethods(collectMethods);
 		Instrument.execute(_sourceSRCPath, stateCollectInstrumentVisitor);
 		
 		int totalMutantClazz = result.size();
@@ -619,7 +600,7 @@ public class Collector {
 	}
 	
 	public void collect(){
-		
+		//remove all previous instrument and format source code
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		
@@ -630,10 +611,10 @@ public class Collector {
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 		writeTestMethodIntoFile(failedTestMethods, Constant.STR_FAILED_TEST_FILE);
 		LevelLogger.info("collecting failed test states ...");
-		collectAllFailedTestState(failedTestMethods);
+		Set<Method> allCollectedMethod = collectAllFailedTestState(failedTestMethods);
 		
 		backupFailedTest(failedTestMethods);
-		collectAllPositiveAndNegativeState();
+		collectAllPositiveAndNegativeState(allCollectedMethod);
 		recoverFailedTest(failedTestMethods);
 	}
 }
