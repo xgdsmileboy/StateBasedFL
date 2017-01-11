@@ -90,6 +90,10 @@ public class InsertVariableGenerator {
 				if (Modifier.isStatic(field.getModifiers()) && !Modifier.isStatic(_methodDeclaration.getModifiers())) {
 					prefix = typeDeclaration.getName().getFullyQualifiedName();
 				}
+				
+				if (Modifier.isStatic(field.getModifiers()) && Modifier.isStatic(_methodDeclaration.getModifiers())) {
+					prefix = "";
+				}
 				Type type = field.getType();
 				List<ASTNode> variables = field.fragments();
 				for (ASTNode astNode : variables) {
