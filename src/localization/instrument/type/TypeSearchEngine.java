@@ -4,14 +4,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.print.attribute.standard.PageRanges;
+
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 //import com.sun.org.apache.bcel.internal.classfile.Visitor;
 //import com.sun.org.apache.bcel.internal.generic.Type;
@@ -65,6 +70,20 @@ class CollectMethodVisitor extends ASTVisitor {
 	
 	@Override
 	public boolean visit(MethodDeclaration node) {
+		
+		ASTNode parent = node.getParent();
+		while (!(parent instanceof CompilationUnit)) {
+			if (parent instanceof TypeDeclaration) {
+				TypeDeclaration typeDeclaration = (TypeDeclaration) parent;
+				if(!Modifier.isPublic(typeDeclaration.getModifiers())){
+					return true;
+				}
+				break;
+			} else if(parent instanceof AnonymousClassDeclaration){
+				return true;
+			}
+			parent = parent.getParent();
+		}
 		
 		if(!Modifier.isStatic(node.getModifiers()) && Modifier.isPublic(node.getModifiers())){
 			Type retType = node.getReturnType2();

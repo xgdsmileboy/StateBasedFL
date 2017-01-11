@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -41,11 +42,15 @@ public class InsertVariableGenerator {
 	public List<ASTNode> generate() {
 		List<ASTNode> statements = new ArrayList<>();
 
+		boolean insertField = true;
 		ASTNode astNode = _methodDeclaration.getParent();
 		while (!(astNode instanceof CompilationUnit)) {
 			if (astNode instanceof TypeDeclaration) {
 				break;
+			} else if(astNode instanceof AnonymousClassDeclaration){
+				insertField = false;
 			}
+			astNode = astNode.getParent();
 		}
 		if (!(astNode instanceof TypeDeclaration)) {
 			if (Debugger.debugOn()) {
@@ -57,8 +62,10 @@ public class InsertVariableGenerator {
 
 		TypeDeclaration typeDeclaration = (TypeDeclaration) astNode;
 
-		// print field information
-		statements.addAll(insertFieldsPrinter(typeDeclaration));
+		if(insertField){
+			// print field information
+			statements.addAll(insertFieldsPrinter(typeDeclaration));
+		}
 
 		// print parameter information
 		List<ASTNode> params = _methodDeclaration.parameters();
