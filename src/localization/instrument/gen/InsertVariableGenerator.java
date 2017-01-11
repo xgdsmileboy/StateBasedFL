@@ -189,6 +189,11 @@ public class InsertVariableGenerator {
 					if(nodes != null){
 						statements.addAll(nodes);
 					}
+				}else {
+					Statement newStatement = GenStatement.genNullCheckerStatement(prefix, name.getFullyQualifiedName(), message);
+					if(newStatement != null){
+						statements.add(newStatement);
+					}
 				}
 			}
 			
