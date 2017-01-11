@@ -138,12 +138,12 @@ public class Collector {
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
-					sBuffer.append(info[2] + ":" + value + " ");
+					sBuffer.append(info[2] + ":" + value + "\t");
 					lastStringBuffer = sBuffer;
 					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
-					sBuffer.append(info[2] + ":" + value + " ");
+					sBuffer.append(info[2] + ":" + value + "\t");
 					allStates.put(integer, sBuffer);
 					lastStringBuffer = sBuffer;
 					lastMethodID = integer;
@@ -234,12 +234,12 @@ public class Collector {
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
-					sBuffer.append(info[2] + ":" + value+ " ");
+					sBuffer.append(info[2] + ":" + value+ "\t");
 					lastStringBuffer = sBuffer;
 					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
-					sBuffer.append(info[2] + ":" + value + " ");
+					sBuffer.append(info[2] + ":" + value + "\t");
 					allStates.put(integer, sBuffer);
 					lastStringBuffer = sBuffer;
 					lastMethodID = integer;
@@ -588,11 +588,11 @@ public class Collector {
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
-					sBuffer.append(info[2] + ":" + value+ " ");
+					sBuffer.append(info[2] + ":" + value+ "\t");
 					lastStringBuffer = sBuffer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
-					sBuffer.append(info[2] + ":" + value + " ");
+					sBuffer.append(info[2] + ":" + value + "\t");
 					allStates.put(integer, sBuffer);
 					lastStringBuffer = sBuffer;
 				}

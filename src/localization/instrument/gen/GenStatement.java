@@ -215,9 +215,9 @@ public class GenStatement {
 		InfixExpression fullInfixExpression = ast.newInfixExpression();
 		StringLiteral messageLiteral = ast.newStringLiteral();
 		if(prefix == null){
-			messageLiteral.setLiteralValue(message + "#" + variable + "==null ");
+			messageLiteral.setLiteralValue(message + "#" + variable + "==null#");
 		} else {
-			messageLiteral.setLiteralValue(message + "#" + prefix + "." + variable + "==null ");
+			messageLiteral.setLiteralValue(message + "#" + prefix + "." + variable + "==null#");
 		}
 		fullInfixExpression.setLeftOperand(messageLiteral);
 		fullInfixExpression.setOperator(Operator.PLUS);
