@@ -55,7 +55,7 @@ public class Instrument {
 		for (File f : fileList) {
 			String source = JavaFile.readFileToString(f);
 			CompilationUnit unit = JavaFile.genASTFromSource(source, ASTParser.K_COMPILATION_UNIT);
-			if(unit == null){
+			if(unit == null || unit.toString().trim().length() < 1){
 				continue;
 			}
 			unit.accept(traversalVisitor);
