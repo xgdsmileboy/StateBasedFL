@@ -100,6 +100,9 @@ public class Collector {
 					continue;
 				}
 				line = line.substring("[junit] ".length());
+				if (line.startsWith("[INST]M>>START")) {
+					continue;
+				}
 				if (line.startsWith("[INST]M>>END")) {
 					String[] guardStrings = line.split("#");
 					if(guardStrings.length < 3){
@@ -205,6 +208,9 @@ public class Collector {
 							allStates.put(id, stringBuffer);
 						}
 					}
+					continue;
+				}
+				if (line.startsWith("[INST]M>>START")) {
 					continue;
 				}
 //				if (line.startsWith("[INST]M>>START")) {
