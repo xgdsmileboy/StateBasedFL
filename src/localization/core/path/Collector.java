@@ -60,7 +60,7 @@ public class Collector {
 		JavaFile.writeStringToFile(Constant.STR_FAILED_TEST_FILE, stringBuffer.toString(), false);
 	}
 	
-	private void collectStateIntoFile(String sourceFilePath, String targetFileContainer, int testStatement, int sampleCycle) {
+	private void collectFailedTestStateIntoFile(String sourceFilePath, String targetFileContainer, int testStatement, int sampleCycle) {
 		File file = new File(sourceFilePath);
 		Map<Integer, StringBuffer> allStates = new HashMap<>();
 		BufferedReader bufferedReader = null;
@@ -93,33 +93,31 @@ public class Collector {
 					break;
 				}
 			}
-			boolean isNewLine = true;
 			String newLine = System.getProperty("line.separator");
-			StringBuffer lastStringBuffer = new StringBuffer();
-			int lastMethodID = 0;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
 				if (!line.startsWith("[junit] ")) {
 					continue;
 				}
 				line = line.substring("[junit] ".length());
-				if (line.startsWith("[INST]M>>START")) {
-					if(isNewLine){
-						lastStringBuffer.append(newLine);
-						isNewLine = false;
-						if(lastStringBuffer.toString().length() > 1000){
-							String methodString = Identifier.getMessage(lastMethodID);
+				if (line.startsWith("[INST]M>>END")) {
+					String[] guardStrings = line.split("#");
+					if(guardStrings.length < 3){
+						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
+						System.exit(0);
+					}
+					int id = Integer.parseInt(guardStrings[2]);
+					if(allStates.containsKey(id)){
+						allStates.get(id).append(newLine);
+						if(allStates.get(id).toString().length() > 1000){
+							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-							String message = lastStringBuffer.toString() + System.getProperty("line.separator");
+							String message = allStates.get(id).toString() + System.getProperty("line.separator");
 							JavaFile.writeStringToFile(filePath, message, true);
-							lastStringBuffer = new StringBuffer();
-							allStates.put(lastMethodID, lastStringBuffer);
+							StringBuffer stringBuffer = new StringBuffer();
+							allStates.put(id, stringBuffer);
 						}
 					}
-					continue;
-				}
-				isNewLine = true;
-				if (line.startsWith("[INST]T")) {
 					continue;
 				}
 				if (!line.startsWith("[INST]M")) {
@@ -139,14 +137,10 @@ public class Collector {
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
 					sBuffer.append(info[2] + ":" + value + "\t");
-					lastStringBuffer = sBuffer;
-					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 					sBuffer.append(info[2] + ":" + value + "\t");
 					allStates.put(integer, sBuffer);
-					lastStringBuffer = sBuffer;
-					lastMethodID = integer;
 				}
 			}
 			bufferedReader.close();
@@ -183,33 +177,53 @@ public class Collector {
 		try {
 			bufferedReader = new BufferedReader(new FileReader(file));
 			String line = null;
-			boolean isNewLine = true;
+//			boolean isNewLine = true;
 			String newLine = System.getProperty("line.separator");
-			StringBuffer lastStringBuffer = new StringBuffer();
-			Integer lastMethodID = 0;
+//			StringBuffer lastStringBuffer = new StringBuffer();
+//			Integer lastMethodID = 0;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
 				if (!line.startsWith("[junit] ")) {
 					continue;
 				}
 				line = line.substring("[junit] ".length());
-				if (line.startsWith("[INST]M>>START")) {
-					if(isNewLine){
-						lastStringBuffer.append(newLine);
-						isNewLine = false;
-						//to avoid memory overload
-						if(lastStringBuffer.toString().length() > 1000){
-							String methodString = Identifier.getMessage(lastMethodID);
+				if (line.startsWith("[INST]M>>END")) {
+					String[] guardStrings = line.split("#");
+					if(guardStrings.length < 3){
+						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
+						System.exit(0);
+					}
+					int id = Integer.parseInt(guardStrings[2]);
+					if(allStates.containsKey(id)){
+						allStates.get(id).append(newLine);
+						if(allStates.get(id).toString().length() > 1000){
+							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-							String message = lastStringBuffer.toString() + System.getProperty("line.separator");
+							String message = allStates.get(id).toString() + System.getProperty("line.separator");
 							JavaFile.writeStringToFile(filePath, message, true);
-							lastStringBuffer = new StringBuffer();
-							allStates.put(lastMethodID, lastStringBuffer);
+							StringBuffer stringBuffer = new StringBuffer();
+							allStates.put(id, stringBuffer);
 						}
 					}
 					continue;
 				}
-				isNewLine = true;
+//				if (line.startsWith("[INST]M>>START")) {
+//					if(isNewLine){
+//						lastStringBuffer.append(newLine);
+//						isNewLine = false;
+//						//to avoid memory overload
+//						if(lastStringBuffer.toString().length() > 1000){
+//							String methodString = Identifier.getMessage(lastMethodID);
+//							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+//							String message = lastStringBuffer.toString() + System.getProperty("line.separator");
+//							JavaFile.writeStringToFile(filePath, message, true);
+//							lastStringBuffer = new StringBuffer();
+//							allStates.put(lastMethodID, lastStringBuffer);
+//						}
+//					}
+//					continue;
+//				}
+//				isNewLine = true;
 				if (line.startsWith("[INST]T")) {
 					String[] info = line.split("#");
 					if(info.length >= 2){
@@ -235,14 +249,14 @@ public class Collector {
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
 					sBuffer.append(info[2] + ":" + value+ "\t");
-					lastStringBuffer = sBuffer;
-					lastMethodID = integer;
+//					lastStringBuffer = sBuffer;
+//					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 					sBuffer.append(info[2] + ":" + value + "\t");
 					allStates.put(integer, sBuffer);
-					lastStringBuffer = sBuffer;
-					lastMethodID = integer;
+//					lastStringBuffer = sBuffer;
+//					lastMethodID = integer;
 				}
 			}
 			bufferedReader.close();
@@ -297,7 +311,7 @@ public class Collector {
 			}
 			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, methodInfo[0], methodInfo[2]), Constant.STR_TMP_OUTPUT_FILE);
 			String testDataFile = Constant.STR_FAILED_DATA_COLLECT_PATH + Constant.PATH_SEPARATOR + methodInfo[0] + "_" + methodInfo[2];
-			collectStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, testDataFile, testMethod.getTestStatementNumber(), 0);
+			collectFailedTestStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, testDataFile, testMethod.getTestStatementNumber(), 0);
 		}
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		// this state collecting instrument can be reused for collecting positive state, which can reduce the de/instrument cost
@@ -543,10 +557,10 @@ public class Collector {
 		try {
 			bufferedReader = new BufferedReader(new FileReader(file));
 			String line = null;
-			boolean isNewLine = true;
+//			boolean isNewLine = true;
 			boolean canCollectData = false;
 			String newLine = System.getProperty("line.separator");
-			StringBuffer lastStringBuffer = new StringBuffer();
+//			StringBuffer lastStringBuffer = new StringBuffer();
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
 				if (!line.startsWith("[junit] [INST]")) {
@@ -564,13 +578,33 @@ public class Collector {
 				}
 				
 				if (line.startsWith("M>>START")) {
-					if(isNewLine){
-						lastStringBuffer.append(newLine);
-						isNewLine = false;
+//					if(isNewLine){
+//						lastStringBuffer.append(newLine);
+//						isNewLine = false;
+//					}
+					continue;
+				}
+//				isNewLine = true;
+				if (line.startsWith("M>>END")) {
+					String[] guardStrings = line.split("#");
+					if(guardStrings.length < 3){
+						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
+						System.exit(0);
+					}
+					int id = Integer.parseInt(guardStrings[2]);
+					if(allStates.containsKey(id)){
+						allStates.get(id).append(newLine);
+						if(allStates.get(id).toString().length() > 1000){
+							String methodString = Identifier.getMessage(id);
+							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+							String message = allStates.get(id).toString() + System.getProperty("line.separator");
+							JavaFile.writeStringToFile(filePath, message, true);
+							StringBuffer stringBuffer = new StringBuffer();
+							allStates.put(id, stringBuffer);
+						}
 					}
 					continue;
 				}
-				isNewLine = true;
 				if(!canCollectData){
 					continue;
 				}
@@ -589,12 +623,12 @@ public class Collector {
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
 					sBuffer.append(info[2] + ":" + value+ "\t");
-					lastStringBuffer = sBuffer;
+//					lastStringBuffer = sBuffer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 					sBuffer.append(info[2] + ":" + value + "\t");
 					allStates.put(integer, sBuffer);
-					lastStringBuffer = sBuffer;
+//					lastStringBuffer = sBuffer;
 				}
 			}
 			bufferedReader.close();

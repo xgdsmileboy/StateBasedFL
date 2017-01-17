@@ -170,11 +170,14 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 			}
 		}
 
-		Statement endGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>START", 0);
-		blockStatement.add(endGuard);
+		Statement startGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>START" + "#" + String.valueOf(keyValue), 0);
+		blockStatement.add(startGuard);
 		
 		InsertVariableGenerator genVariablePrinter = new InsertVariableGenerator(_dynamicRuntimeInfo, node, _cu, message);
 		blockStatement.addAll(genVariablePrinter.generate());
+		
+		Statement endGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>END" + "#" + String.valueOf(keyValue), 0);
+		blockStatement.add(endGuard);
 
 		for (; i < methodBody.statements().size(); i++) {
 			ASTNode astNode = (ASTNode) methodBody.statements().get(i);

@@ -168,11 +168,14 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 		}
 
 		if(needInstrument){
-			Statement endGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>START", 0);
-			blockStatement.add(endGuard);
+			Statement startGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>START" + "#" + keyValue, 0);
+			blockStatement.add(startGuard);
 		
 			InsertVariableGenerator genVariablePrinter = new InsertVariableGenerator(_dynamicRuntimeInfo, node, _cu, message);
 			blockStatement.addAll(genVariablePrinter.generate());
+			
+			Statement endGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>END" + "#" + keyValue, 0);
+			blockStatement.add(endGuard);
 		}
 
 		int startLine = _cu.getLineNumber(node.getStartPosition());
