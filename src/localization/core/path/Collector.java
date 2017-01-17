@@ -106,7 +106,7 @@ public class Collector {
 						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
 						System.exit(0);
 					}
-					int id = Integer.parseInt(guardStrings[2]);
+					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
 						allStates.get(id).append(newLine);
 						if(allStates.get(id).toString().length() > 1000){
@@ -193,7 +193,7 @@ public class Collector {
 						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
 						System.exit(0);
 					}
-					int id = Integer.parseInt(guardStrings[2]);
+					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
 						allStates.get(id).append(newLine);
 						if(allStates.get(id).toString().length() > 1000){
@@ -591,7 +591,7 @@ public class Collector {
 						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
 						System.exit(0);
 					}
-					int id = Integer.parseInt(guardStrings[2]);
+					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
 						allStates.get(id).append(newLine);
 						if(allStates.get(id).toString().length() > 1000){
