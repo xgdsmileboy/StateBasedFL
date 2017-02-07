@@ -2,6 +2,7 @@ package localization.core.path;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.swing.text.AbstractDocument.BranchElement;
+
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -24,6 +28,7 @@ import localization.common.java.JavaFile;
 import localization.common.java.Method;
 import localization.common.java.Mutant;
 import localization.common.java.TestMethod;
+import localization.common.util.Debugger;
 import localization.common.util.ExecuteCommand;
 import localization.common.util.LevelLogger;
 import localization.common.util.Pair;
@@ -496,7 +501,9 @@ public class Collector {
 						continue;
 					}
 					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, testMethod.getFirst()), Constant.STR_TMP_OUTPUT_FILE);
-					collectNegativeStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
+					if(isFailedTest(Constant.STR_TMP_OUTPUT_FILE)){
+						collectNegativeStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
+					}
 				}
 			}
 			//recover original file
@@ -505,6 +512,51 @@ public class Collector {
 		
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
+	}
+	
+	private boolean isFailedTest(String outputFile){
+		boolean isFailed = false;
+		if (outputFile == null) {
+			return isFailed;
+		}
+		File file = new File(outputFile);
+		BufferedReader bReader = null;
+		try {
+			bReader = new BufferedReader(new FileReader(file));
+		} catch (FileNotFoundException e) {
+			return isFailed;
+		}
+
+		String line = null;
+		List<String> failedTest = new ArrayList<>();
+		try {
+			while ((line = bReader.readLine()) != null) {
+				String trimed = line.trim();
+				if (trimed.startsWith(Constant.ANT_BUILD_FAILED)) {
+					isFailed = false;
+					break;
+				}
+				if (trimed.startsWith("Failing tests:")) {
+					String count = trimed.substring("Failing tests:".length());
+					int failingCount = Integer.parseInt(count.trim());
+					if (failingCount > 0) {
+						isFailed = true;
+						break;
+					}
+				}
+			}
+			bReader.close();
+		} catch (IOException e) {
+			
+		} finally {
+			if (bReader != null) {
+				try {
+					bReader.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return isFailed;
 	}
 	
 	private List<String> collectFailedTest(){
