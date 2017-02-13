@@ -189,9 +189,11 @@ public class GenStatement {
 		// variable_null_method null"); }
 		StringLiteral stringLiteral = ast.newStringLiteral();
 		if(prefix == null){
-			stringLiteral.setLiteralValue(message + "#" + variable + "_null_" + method + "#null");
+//			stringLiteral.setLiteralValue(message + "#" + variable + "_null_" + method + "#null");
+			stringLiteral.setLiteralValue(message + "#" + variable + "." + method + "#null");
 		} else {
-			stringLiteral.setLiteralValue(message + "#" + prefix + "." + variable + "_null_" + method + "#null");
+//			stringLiteral.setLiteralValue(message + "#" + prefix + "." + variable + "_null_" + method + "#null");
+			stringLiteral.setLiteralValue(message + "#" + prefix + "." + variable + "." + method + "#null");
 		}
 		Statement printNullStatement = genPrinter(stringLiteral);
 		Block thenBlock = ast.newBlock();
