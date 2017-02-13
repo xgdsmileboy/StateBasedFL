@@ -32,7 +32,8 @@ public class InsertVariableGenerator {
 	private String _locMessage = "";
 	private DynamicRuntimeInfo _dynamicRuntimeInfo = null;
 
-	public InsertVariableGenerator(DynamicRuntimeInfo dynamicRuntimeInfo, MethodDeclaration methodDeclaration, CompilationUnit cu, String locMessage) {
+	public InsertVariableGenerator(DynamicRuntimeInfo dynamicRuntimeInfo, MethodDeclaration methodDeclaration,
+			CompilationUnit cu, String locMessage) {
 		_methodDeclaration = methodDeclaration;
 		_cu = cu;
 		_locMessage = locMessage;
@@ -47,7 +48,7 @@ public class InsertVariableGenerator {
 		while (!(astNode instanceof CompilationUnit)) {
 			if (astNode instanceof TypeDeclaration) {
 				break;
-			} else if(astNode instanceof AnonymousClassDeclaration){
+			} else if (astNode instanceof AnonymousClassDeclaration) {
 				insertField = false;
 			}
 			astNode = astNode.getParent();
@@ -62,7 +63,7 @@ public class InsertVariableGenerator {
 
 		TypeDeclaration typeDeclaration = (TypeDeclaration) astNode;
 
-		if(insertField){
+		if (insertField) {
 			// print field information
 			statements.addAll(insertFieldsPrinter(typeDeclaration));
 		}
@@ -82,15 +83,16 @@ public class InsertVariableGenerator {
 		for (FieldDeclaration field : fieldDeclarations) {
 			if (!Modifier.isFinal(field.getModifiers())) {
 				String prefix = "this";
-				//static function can not read non-static field
+				// static function can not read non-static field
 				if (!Modifier.isStatic(field.getModifiers()) && Modifier.isStatic(_methodDeclaration.getModifiers())) {
 					continue;
 				}
-				//non-static function should add class name to reach the static field
+				// non-static function should add class name to reach the static
+				// field
 				if (Modifier.isStatic(field.getModifiers())) {
 					prefix = typeDeclaration.getName().getFullyQualifiedName();
 				}
-				
+
 				Type type = field.getType();
 				List<ASTNode> variables = field.fragments();
 				for (ASTNode astNode : variables) {
@@ -98,7 +100,7 @@ public class InsertVariableGenerator {
 						VariableDeclarationFragment variableDeclarationFragment = (VariableDeclarationFragment) astNode;
 						SimpleName name = variableDeclarationFragment.getName();
 						List<ASTNode> nodes = genStatement(prefix, type, name, _locMessage);
-						if(nodes != null){
+						if (nodes != null) {
 							statements.addAll(nodes);
 						}
 					} else {
@@ -121,7 +123,7 @@ public class InsertVariableGenerator {
 				Type type = singleVariableDeclaration.getType();
 				SimpleName name = singleVariableDeclaration.getName();
 				List<ASTNode> nodes = genStatement(null, type, name, _locMessage);
-				if(nodes != null){
+				if (nodes != null) {
 					statements.addAll(nodes);
 				}
 
@@ -137,73 +139,79 @@ public class InsertVariableGenerator {
 
 	private List<ASTNode> genStatement(String prefix, Type type, SimpleName name, String message) {
 		List<ASTNode> statements = new ArrayList<>();
-		if (type.isPrimitiveType() || type.toString().equals("String")) {
+		if (type.isPrimitiveType() || type.toString().equals("String") || type.toString().equals("CharSequence")
+				|| type.toString().equals("StringBuilder") || type.toString().equals("StringBuffer")) {
 			statements.add(GenStatement.genPrimitiveStatement(prefix, message, name.toString()));
 			return statements;
 		} else if (type.isSimpleType()) {
 			String sourcePath = InfoBuilder.buildSourceSRCPath(_dynamicRuntimeInfo, true);
 			boolean imported = false;
-			for(Object object : _cu.imports()){
+			for (Object object : _cu.imports()) {
 				if (object instanceof ImportDeclaration) {
 					ImportDeclaration importDeclaration = (ImportDeclaration) object;
 					String importName = importDeclaration.getName().getFullyQualifiedName();
 					int index = importName.lastIndexOf(".");
-					if(index < 0){
+					if (index < 0) {
 						if (Debugger.debugOn()) {
-							Debugger.debug(__name__ + "#genStatement Parse the format of Import failed : " + importDeclaration);
+							Debugger.debug(__name__ + "#genStatement Parse the format of Import failed : "
+									+ importDeclaration);
 						}
 						continue;
 					}
 					String importClazzName = importName.substring(index + 1);
-					if(importClazzName.equals(type.toString())){
+					if (importClazzName.equals(type.toString())) {
 						imported = true;
 						String packageName = importName.substring(0, index);
 						String absoluteJavaFilePath = sourcePath + Constant.PATH_SEPARATOR + packageName;
-						if(TypeSearchEngine.searchType(absoluteJavaFilePath, importClazzName)){
-							//find clazz
-							String file = absoluteJavaFilePath.replaceAll("\\.", Constant.PATH_SEPARATOR) + Constant.PATH_SEPARATOR + importClazzName + ".java";
+						if (TypeSearchEngine.searchType(absoluteJavaFilePath, importClazzName)) {
+							// find clazz
+							String file = absoluteJavaFilePath.replaceAll("\\.", Constant.PATH_SEPARATOR)
+									+ Constant.PATH_SEPARATOR + importClazzName + ".java";
 							List<ASTNode> nodes = genStatement(prefix, file, name, message);
-							if(nodes != null){
+							if (nodes != null) {
 								statements.addAll(nodes);
 							}
-							
-						} else{
-							if(Debugger.debugOn()){
+
+						} else {
+							if (Debugger.debugOn()) {
 								Debugger.debug(__name__ + "getStatement Not a type imported : " + importClazzName);
 							}
 						}
 						break;
 					}
 				} else {
-					if(Debugger.debugOn()){
+					if (Debugger.debugOn()) {
 						Debugger.debug(__name__ + "#genStatement Import is not an ImportDeclaration : " + object);
 					}
 				}
 			}
-			if(!imported){
+			if (!imported) {
 				String currPackage = _cu.getPackage().getName().getFullyQualifiedName();
 				String absoluteJavaFilePath = sourcePath + Constant.PATH_SEPARATOR + currPackage;
-				if(TypeSearchEngine.searchType(absoluteJavaFilePath, type.toString())){
-					//find the type
-					String file = absoluteJavaFilePath.replaceAll("\\.", Constant.PATH_SEPARATOR) + Constant.PATH_SEPARATOR + type.toString() + ".java";
+				if (TypeSearchEngine.searchType(absoluteJavaFilePath, type.toString())) {
+					// find the type
+					String file = absoluteJavaFilePath.replaceAll("\\.", Constant.PATH_SEPARATOR)
+							+ Constant.PATH_SEPARATOR + type.toString() + ".java";
 					List<ASTNode> nodes = genStatement(prefix, file, name, message);
-					if(nodes != null){
+					if (nodes != null) {
 						statements.addAll(nodes);
 					}
-				}else {
-					Statement newStatement = GenStatement.genNullCheckerStatement(prefix, name.getFullyQualifiedName(), message);
-					if(newStatement != null){
+				} else {
+					Statement newStatement = GenStatement.genNullCheckerStatement(prefix, name.getFullyQualifiedName(),
+							message);
+					if (newStatement != null) {
 						statements.add(newStatement);
 					}
 				}
 			}
-			
+
 		} else if (type.isQualifiedType() || type.isArrayType() || type.isParameterizedType() || type.isUnionType()) {
-			Statement newStatement = GenStatement.genNullCheckerStatement(prefix, name.getFullyQualifiedName(), message);
-			if(newStatement != null){
+			Statement newStatement = GenStatement.genNullCheckerStatement(prefix, name.getFullyQualifiedName(),
+					message);
+			if (newStatement != null) {
 				statements.add(newStatement);
 			}
-			
+
 		} else {
 			if (Debugger.debugOn()) {
 				Debugger.debug(__name__ + "#genStatement  UNKNOWN (Not print) type : " + type);
@@ -212,13 +220,14 @@ public class InsertVariableGenerator {
 
 		return statements;
 	}
-	
-	private List<ASTNode> genStatement(String prefix, String javaFilePath, SimpleName name, String message){
+
+	private List<ASTNode> genStatement(String prefix, String javaFilePath, SimpleName name, String message) {
 		List<ASTNode> statements = new ArrayList<>();
 		List<String> methods = TypeSearchEngine.searchSimpleMethod(javaFilePath);
-		if(methods != null){
-			for(String method : methods){
-				Statement newStatement = GenStatement.genMethodInvocationStatement(prefix, name.getFullyQualifiedName(), method, message);
+		if (methods != null) {
+			for (String method : methods) {
+				Statement newStatement = GenStatement.genMethodInvocationStatement(prefix, name.getFullyQualifiedName(),
+						method, message);
 				statements.add(newStatement);
 			}
 		}
