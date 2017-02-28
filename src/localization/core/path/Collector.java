@@ -85,17 +85,19 @@ public class Collector {
 					break;
 				}
 			}
-			while ((line = bufferedReader.readLine()) != null) {
-				line = line.trim();
-				if (!line.startsWith("[junit] ")) {
-					continue;
-				}
-				line = line.substring("[junit] ".length());
-				if (line.startsWith("[INST]M>>START")) {
-					sampleCycle--;
-				}
-				if (sampleCycle <= 0) {
-					break;
+			if(sampleCycle > 0){
+				while ((line = bufferedReader.readLine()) != null) {
+					line = line.trim();
+					if (!line.startsWith("[junit] ")) {
+						continue;
+					}
+					line = line.substring("[junit] ".length());
+					if (line.startsWith("[INST]M>>START")) {
+						sampleCycle--;
+					}
+					if (sampleCycle <= 0) {
+						break;
+					}
 				}
 			}
 			String newLine = System.getProperty("line.separator");
@@ -133,21 +135,26 @@ public class Collector {
 				}
 				String[] info = line.split("#");
 				String value = "";
-				if (info.length < 3) {
+				if (info.length < 2) {
 					LevelLogger.error("collectStateIntoFile pass info error : " + line);
 					continue;
 				}
-				if(info.length == 4){
-					value = info[3];
+				if(info.length == 3){
+					value = info[2];
+				}else{
+					//[INST]M#5816#{[@2@<null>@2@<null>@2@<null>@2@<null>@2@<null>]@1@0@1@8}
+					value = line.substring(info[0].length() + info[1].length() + 2);
 				}
 				
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
-					sBuffer.append(info[2] + ":" + value + "\t");
+//					sBuffer.append(info[2] + ":" + value + "\t");
+					sBuffer.append(value);
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
-					sBuffer.append(info[2] + ":" + value + "\t");
+//					sBuffer.append(info[2] + ":" + value + "\t");
+					sBuffer.append(value);
 					allStates.put(integer, sBuffer);
 				}
 			}
@@ -247,24 +254,28 @@ public class Collector {
 				}
 				String[] info = line.split("#");
 				String value = "";
-				if (info.length < 3) {
+				if (info.length < 2) {
 					LevelLogger.error("collectStateIntoFile pass info error : " + line);
 					continue;
 				}
-				if(info.length == 4){
-					value = info[3];
+				if(info.length == 3){
+					value = info[2];
+				}else{
+					value = line.substring(info[0].length() + info[1].length() + 2);
 				}
 				
 				collectStateMethod.add(currentTest);
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
-					sBuffer.append(info[2] + ":" + value+ "\t");
+//					sBuffer.append(info[2] + ":" + value+ "\t");
+					sBuffer.append(value);
 //					lastStringBuffer = sBuffer;
 //					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
-					sBuffer.append(info[2] + ":" + value + "\t");
+//					sBuffer.append(info[2] + ":" + value + "\t");
+					sBuffer.append(value);
 					allStates.put(integer, sBuffer);
 //					lastStringBuffer = sBuffer;
 //					lastMethodID = integer;
@@ -669,22 +680,26 @@ public class Collector {
 				
 				String[] info = line.split("#");
 				String value = "";
-				if (info.length < 3) {
+				if (info.length < 2) {
 					LevelLogger.error("collectStateIntoFile pass info error : " + line);
 					continue;
 				}
-				if(info.length == 4){
-					value = info[3];
+				if(info.length == 3){
+					value = info[2];
+				}else{
+					value = line.substring(info[0].length() + info[1].length() + 2);
 				}
 				
 				Integer integer = Integer.valueOf(info[1]);
 				if(allStates.containsKey(integer)){
 					StringBuffer sBuffer = allStates.get(integer);
-					sBuffer.append(info[2] + ":" + value+ "\t");
+//					sBuffer.append(info[2] + ":" + value+ "\t");
+					sBuffer.append(value);
 //					lastStringBuffer = sBuffer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
-					sBuffer.append(info[2] + ":" + value + "\t");
+//					sBuffer.append(info[2] + ":" + value + "\t");
+					sBuffer.append(value);
 					allStates.put(integer, sBuffer);
 //					lastStringBuffer = sBuffer;
 				}

@@ -2,15 +2,21 @@ package localization.instrument.gen;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.InfixExpression.Operator;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+
+import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
+
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NullLiteral;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
@@ -19,7 +25,7 @@ import org.eclipse.jdt.core.dom.ThisExpression;
 public class GenStatement {
 
 	private static AST ast = AST.newAST(AST.JLS8);
-
+	
 	private static Statement genPrinter(Expression expression) {
 		MethodInvocation methodInvocation = ast.newMethodInvocation();
 		methodInvocation.setExpression(ast.newName("System.out"));
@@ -253,6 +259,37 @@ public class GenStatement {
 		fullInfixExpression.setRightOperand(wrap);
 
 		return genPrinter(fullInfixExpression);
+	}
+	
+	public static Statement genThisFieldDumpMethodInvocation(String message){
+		ThisExpression thisExpression = ast.newThisExpression();
+		return genDumpMethodInvation(message, thisExpression);
+		
+	}
+	
+	public static Statement genVariableDumpMethodInvation(String message, String variableName){
+		SimpleName simpleName = ast.newSimpleName(variableName);
+		CastExpression castExpression = ast.newCastExpression();
+		return genDumpMethodInvation(message, simpleName);
+	}
+	
+	private static Statement genDumpMethodInvation(String message, Expression expression){
+		//auxiliary.Dumper.dump(expression)
+		MethodInvocation methodInvocation = ast.newMethodInvocation();
+		methodInvocation.setExpression(ast.newName("auxiliary.Dumper"));
+		methodInvocation.setName(ast.newSimpleName("dump"));
+		methodInvocation.arguments().add(expression);
+		
+		//message + "#" + auxliliary.Dumper.dump(expression)
+		InfixExpression infixExpression = ast.newInfixExpression();
+		StringLiteral stringLiteral = ast.newStringLiteral();
+		stringLiteral.setLiteralValue(message + "#");
+		
+		infixExpression.setLeftOperand(stringLiteral);
+		infixExpression.setOperator(InfixExpression.Operator.PLUS);
+		infixExpression.setRightOperand(methodInvocation);
+		
+		return genPrinter(infixExpression);
 	}
 
 }

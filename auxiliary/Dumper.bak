@@ -1,16 +1,11 @@
-package auxiliary;
+package localization;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class Dumper {
-	
-	private static boolean removeNewLine = true;
-	private final static int MAX_DEPTH = 4;
-	private final static int ARRAY_MAX_LENGTH = 5;
 	private static Dumper instance = new Dumper();
 
 	protected static Dumper getInstance() {
@@ -21,46 +16,19 @@ public class Dumper {
 		int maxDepth = 0;
 		int maxArrayElements = 0;
 		int callCount = 0;
-//		HashMap<Object, Integer> visited = new HashMap<Object, Integer>();
-		List visited = new ArrayList();
+		HashMap<Object, Integer> visited = new HashMap<Object, Integer>();
 	}
 
 	public static String dump(Object o) {
-		return dump(o, MAX_DEPTH, ARRAY_MAX_LENGTH);
+		return dump(o, 0, 0);
 	}
-	public static String dump(int o) {
-		return dump(Integer.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	public static String dump(float o) {
-		return dump(Float.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	public static String dump(double o) {
-		return dump(Double.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	public static String dump(long o) {
-		return dump(Long.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	public static String dump(byte o) {
-		return dump(Byte.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	public static String dump(char o) {
-		return dump(Character.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	public static String dump(boolean o) {
-		return dump(Boolean.valueOf(o), MAX_DEPTH, ARRAY_MAX_LENGTH);
-	}
-	
+
 	public static String dump(Object o, int maxDepth, int maxArrayElements) {
 		DumpContext ctx = Dumper.getInstance().new DumpContext();
 		ctx.maxDepth = maxDepth;
 		ctx.maxArrayElements = maxArrayElements;
 
-		String allFields = dump(o, ctx);
-		if(removeNewLine){
-			allFields = allFields.replace("\n", "");
-		}
-		
-		return allFields;
+		return dump(o, ctx);
 	}
 
 	protected static String dump(Object o, DumpContext ctx) {
@@ -70,53 +38,83 @@ public class Dumper {
 
 		ctx.callCount++;
 		StringBuffer tabs = new StringBuffer();
+//		for (int k = 0; k < ctx.callCount; k++) {
+//			tabs.append("\t");
+//		}
 		tabs.append("@"+ctx.callCount+"@");
 		StringBuffer buffer = new StringBuffer();
 		Class oClass = o.getClass();
 
+		String oSimpleName = getSimpleNameWithoutArrayQualifier(oClass);
+
 		if (oClass.isArray()) {
+			buffer.append("\n");
+			buffer.append(tabs.toString().substring(1));
 			buffer.append("[\n");
 			int rowCount = ctx.maxArrayElements == 0 ? Array.getLength(o)
 					: Math.min(ctx.maxArrayElements, Array.getLength(o));
 			for (int i = 0; i < rowCount; i++) {
+				buffer.append(tabs.toString());
 				try {
 					Object value = Array.get(o, i);
-					buffer.append(dumpValue(value, ctx, tabs));
+					buffer.append(dumpValue(value, ctx));
 				} catch (Exception e) {
 					buffer.append(e.getMessage());
 				}
+				if (i < Array.getLength(o) - 1)
+					buffer.append(",");
 				buffer.append("\n");
 			}
+//			if (rowCount < Array.getLength(o)) {
+//				buffer.append(tabs.toString());
+//				buffer.append(Array.getLength(o) - rowCount + " more array elements...");
+//				buffer.append("\n");
+//			}
+			buffer.append(tabs.toString().substring(1));
 			buffer.append("]");
 		} else {
+			buffer.append("\n");
+			buffer.append(tabs.toString().substring(1));
 			buffer.append("{\n");
+//			buffer.append(tabs.toString());
+//			buffer.append("hashCode: " + o.hashCode());
+//			buffer.append("\n");
 			while (oClass != null && oClass != Object.class) {
-				
-				Field[] allFields = oClass.getDeclaredFields();
-				
-				for(int i = 0; i < allFields.length; i++){
-					Field field = allFields[i];
-					int modifiers = field.getModifiers();
-					if(Modifier.isFinal(modifiers) && Modifier.isStatic(modifiers)){
+				Field[] fields = oClass.getDeclaredFields();
+//
+//				if (oClass != o.getClass()) {
+//					buffer.append(tabs.toString().substring(1));
+//					buffer.append("  Inherited from superclass " + oSimpleName + ":\n");
+//				}
+
+				for (int i = 0; i < fields.length; i++) {
+
+					String fSimpleName = getSimpleNameWithoutArrayQualifier(fields[i].getType());
+					String fName = fields[i].getName();
+					
+					if(Modifier.isFinal(fields[i].getModifiers()) && Modifier.isStatic(fields[i].getModifiers())){
 						continue;
 					}
-					//print variable name information
-//					String fSimpleName = getSimpleNameWithoutArrayQualifier(fields[i].getType());
-//					String fName = fields[i].getName();
-//					buffer.append(fName + "(" + fSimpleName + ")=");
-//					buffer.append("(" + fSimpleName + ")");
 					
-					field.setAccessible(true);
+					fields[i].setAccessible(true);
+					buffer.append(tabs.toString());
+//					buffer.append(fName + "(" + fSimpleName + ")");
+//					buffer.append("=");
+//					buffer.append("(" + fSimpleName + ")");
+
 					try {
-						Object value = field.get(o);
-						buffer.append(dumpValue(value, ctx, tabs));
+						Object value = fields[i].get(o);
+						buffer.append(dumpValue(value, ctx));
 					} catch (Exception e) {
+						buffer.append(e.getMessage());
 					}
 					buffer.append("\n");
-					
 				}
 				oClass = oClass.getSuperclass();
+				oSimpleName = oClass.getSimpleName();
 			}
+//			buffer.append(tabs.toString().substring(1));
+			buffer.append(tabs.toString().substring(String.valueOf(ctx.callCount).length()+2));
 			buffer.append("}");
 		}
 		ctx.callCount--;
@@ -124,10 +122,9 @@ public class Dumper {
 
 	}
 
-	protected static String dumpValue(Object value, DumpContext ctx, StringBuffer tabs) {
-		String nullValue = tabs.toString() + "<null>";
+	protected static String dumpValue(Object value, DumpContext ctx) {
 		if (value == null) {
-			return nullValue;
+			return "<null>";
 		}
 		if (value.getClass().isPrimitive() || value.getClass() == java.lang.Short.class
 				|| value.getClass() == java.lang.Long.class || value.getClass() == java.lang.String.class
@@ -136,23 +133,21 @@ public class Dumper {
 				|| value.getClass() == java.lang.Double.class || value.getClass() == java.lang.Boolean.class
 				|| value.getClass() == java.util.Date.class || value.getClass().isEnum()) {
 
-			return tabs.toString() + value.toString();
+			return value.toString();
 
 		} else {
-//			Integer visitedIndex = ctx.visited.get(value);
-//			if (visitedIndex == null) {
-			if(!ctx.visited.contains(value)){
-//				ctx.visited.put(value, ctx.callCount);
-				ctx.visited.add(value);
+			Integer visitedIndex = ctx.visited.get(value);
+			if (visitedIndex == null) {
+				ctx.visited.put(value, ctx.callCount);
 				if (ctx.maxDepth == 0 || ctx.callCount < ctx.maxDepth) {
 					return dump(value, ctx);
 				} else {
 //					return "<Reached max recursion depth>";
-					return nullValue;
+					return "<null>";
 				}
 			} else {
-//				return "<Previously visited>";
-				return nullValue;
+//				return "<Previously visited - see hashCode " + value.hashCode() + ">";
+				return "<null>";
 			}
 		}
 	}

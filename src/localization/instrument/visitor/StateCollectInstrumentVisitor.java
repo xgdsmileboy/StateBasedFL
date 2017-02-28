@@ -5,17 +5,39 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.sql.StatementEvent;
+import javax.xml.transform.Templates;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.BreakStatement;
+import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
+import org.eclipse.jdt.core.dom.ContinueStatement;
+import org.eclipse.jdt.core.dom.DoStatement;
+import org.eclipse.jdt.core.dom.EnhancedForStatement;
+import org.eclipse.jdt.core.dom.ExpressionStatement;
+import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
+import org.eclipse.jdt.core.dom.SwitchStatement;
+import org.eclipse.jdt.core.dom.SynchronizedStatement;
+import org.eclipse.jdt.core.dom.ThrowStatement;
+import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
+import org.eclipse.jdt.core.dom.WhileStatement;
+
+import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
 
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
@@ -115,6 +137,7 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 		}
 
 		int keyValue = 0;
+		List<String> paramList = new ArrayList<>();
 		if(_method == null){
 			StringBuffer buffer = new StringBuffer(_clazzName + "#");
 	
@@ -133,6 +156,7 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 				} else {
 					SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration) object;
 					param.append("," + singleVariableDeclaration.getType().toString());
+					paramList.add(singleVariableDeclaration.getName().getFullyQualifiedName());
 				}
 			}
 			// add method return type
@@ -160,7 +184,7 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 		}
 
 		List<ASTNode> blockStatement = new ArrayList<>();
-		
+		AST ast = AST.newAST(AST.JLS8);
 		int i = 0;
 		if (methodBody.statements().size() > 0) {
 			ASTNode astNode = (ASTNode) methodBody.statements().get(0);
@@ -177,12 +201,38 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 		blockStatement.addAll(genVariablePrinter.generate());
 		
 		Statement endGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>END" + "#" + String.valueOf(keyValue), 0);
-		blockStatement.add(endGuard);
-
-		for (; i < methodBody.statements().size(); i++) {
-			ASTNode astNode = (ASTNode) methodBody.statements().get(i);
-			blockStatement.add((ASTNode) ASTNode.copySubtree(AST.newAST(AST.JLS8), astNode));
+		
+		//if a constructor, do not instrument 
+		if(node.isConstructor()){
+			blockStatement.add((ASTNode) ASTNode.copySubtree(ast, endGuard));
+			for (; i < methodBody.statements().size(); i++) {
+				ASTNode astNode = (ASTNode) methodBody.statements().get(i);
+				blockStatement.add((ASTNode) ASTNode.copySubtree(AST.newAST(AST.JLS8), astNode));
+			}
+		} else {
+			List<Statement> tmpNodeList = new ArrayList<>();
+			tmpNodeList.add(GenStatement.genThisFieldDumpMethodInvocation(message));
+			for(String param : paramList){
+				tmpNodeList.add(GenStatement.genVariableDumpMethodInvation(message, param));
+			}
+			tmpNodeList.add(endGuard);
+			
+			for (; i < methodBody.statements().size(); i++) {
+				ASTNode astNode = (ASTNode) methodBody.statements().get(i);
+				if(astNode instanceof Statement){
+					blockStatement.addAll(processMethodBody((Statement) astNode, message, tmpNodeList));
+				} else {
+					blockStatement.add(ASTNode.copySubtree(ast, astNode));
+				}
+			}
+			ASTNode lastStatement = blockStatement.get(blockStatement.size() - 1);
+			if(!(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
+				for(Statement insert : tmpNodeList){
+					blockStatement.add(ASTNode.copySubtree(ast, insert));
+				}
+			}
 		}
+		
 		methodBody.statements().clear();
 		for (ASTNode statement : blockStatement) {
 			methodBody.statements().add(ASTNode.copySubtree(methodBody.getAST(), statement));
@@ -190,12 +240,212 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 
 		return true;
 	}
+	
+	public List<Statement> processMethodBody(Statement statement, String message, List<Statement> insertedNodes){
+		List<Statement> result = new ArrayList<>();
+		if (statement instanceof IfStatement) {
+			IfStatement ifStatement = (IfStatement) statement;
+
+			Statement thenBody = ifStatement.getThenStatement();
+			if (thenBody != null) {
+				Block thenBlock = null;
+				if (thenBody instanceof Block) {
+					thenBlock = (Block) thenBody;
+				} else {
+					AST ast = AST.newAST(AST.JLS8);
+					thenBlock = ast.newBlock();
+					thenBlock.statements().add(ASTNode.copySubtree(thenBlock.getAST(), thenBody));
+				}
+
+				Block newThenBlock = processBlock(thenBlock, message, insertedNodes);
+				ifStatement.setThenStatement((Statement) ASTNode.copySubtree(ifStatement.getAST(), newThenBlock));
+			}
+
+			Statement elseBody = ifStatement.getElseStatement();
+			if (elseBody != null) {
+				Block elseBlock = null;
+				if (elseBody instanceof Block) {
+					elseBlock = (Block) elseBody;
+				} else {
+					AST ast = AST.newAST(AST.JLS8);
+					elseBlock = ast.newBlock();
+					elseBlock.statements().add(ASTNode.copySubtree(elseBlock.getAST(), elseBody));
+				}
+				Block newElseBlock = processBlock(elseBlock, message, insertedNodes);
+				ifStatement.setElseStatement((Statement) ASTNode.copySubtree(ifStatement.getAST(), newElseBlock));
+			}
+			result.add(ifStatement);
+		} else if (statement instanceof WhileStatement) {
+
+			WhileStatement whileStatement = (WhileStatement) statement;
+			Statement whilebody = whileStatement.getBody();
+			if (whilebody != null) {
+				Block whileBlock = null;
+				if (whilebody instanceof Block) {
+					whileBlock = (Block) whilebody;
+				} else {
+					AST ast = AST.newAST(AST.JLS8);
+					whileBlock = ast.newBlock();
+					whileBlock.statements().add(ASTNode.copySubtree(whileBlock.getAST(), whilebody));
+				}
+
+				Block newWhileBlock = processBlock(whileBlock, message, insertedNodes);
+				whileStatement.setBody((Statement) ASTNode.copySubtree(whileStatement.getAST(), newWhileBlock));
+			}
+
+			result.add(whileStatement);
+		} else if (statement instanceof ForStatement) {
+
+			ForStatement forStatement = (ForStatement) statement;
+			Statement forBody = forStatement.getBody();
+			if (forBody != null) {
+				Block forBlock = null;
+				if (forBody instanceof Block) {
+					forBlock = (Block) forBody;
+				} else {
+					AST ast = AST.newAST(AST.JLS8);
+					forBlock = ast.newBlock();
+					forBlock.statements().add(ASTNode.copySubtree(forBlock.getAST(), forBody));
+				}
+				Block newForBlock = processBlock(forBlock, message, insertedNodes);
+				forStatement.setBody((Statement) ASTNode.copySubtree(forStatement.getAST(), newForBlock));
+			}
+
+			result.add(forStatement);
+		} else if (statement instanceof DoStatement) {
+
+			DoStatement doStatement = (DoStatement) statement;
+			Statement doBody = doStatement.getBody();
+			if (doBody != null) {
+				Block doBlock = null;
+				if (doBody instanceof Block) {
+					doBlock = (Block) doBody;
+				} else {
+					AST ast = AST.newAST(AST.JLS8);
+					doBlock = ast.newBlock();
+					doBlock.statements().add(ASTNode.copySubtree(doBlock.getAST(), doBody));
+				}
+
+				Block newDoBlock = processBlock(doBlock, message, insertedNodes);
+				doStatement.setBody((Statement) ASTNode.copySubtree(doStatement.getAST(), newDoBlock));
+			}
+
+			result.add(doStatement);
+		} else if (statement instanceof Block) {
+			Block block = (Block) statement;
+			Block newBlock = processBlock(block, message, insertedNodes);
+			result.add(newBlock);
+		} else if (statement instanceof EnhancedForStatement) {
+
+			EnhancedForStatement enhancedForStatement = (EnhancedForStatement) statement;
+			Statement enhancedBody = enhancedForStatement.getBody();
+			if (enhancedBody != null) {
+				Block enhancedBlock = null;
+				if (enhancedBody instanceof Block) {
+					enhancedBlock = (Block) enhancedBody;
+				} else {
+					AST ast = AST.newAST(AST.JLS8);
+					enhancedBlock = ast.newBlock();
+					enhancedBlock.statements().add(ASTNode.copySubtree(enhancedBlock.getAST(), enhancedBody));
+				}
+				Block newEnhancedBlock = processBlock(enhancedBlock, message, insertedNodes);
+				enhancedForStatement
+						.setBody((Statement) ASTNode.copySubtree(enhancedForStatement.getAST(), newEnhancedBlock));
+			}
+
+			result.add(enhancedForStatement);
+		} else if (statement instanceof SwitchStatement) {
+
+			SwitchStatement switchStatement = (SwitchStatement) statement;
+			List<ASTNode> statements = new ArrayList<>();
+			AST ast = AST.newAST(AST.JLS8);
+			for (Object object : switchStatement.statements()) {
+				ASTNode astNode = (ASTNode) object;
+				statements.add(ASTNode.copySubtree(ast, astNode));
+			}
+
+			switchStatement.statements().clear();
+
+			for (ASTNode astNode : statements) {
+				if (astNode instanceof Statement) {
+					Statement s = (Statement) astNode;
+					for (Statement statement2 : processMethodBody(s, message, insertedNodes)) {
+						switchStatement.statements().add(ASTNode.copySubtree(switchStatement.getAST(), statement2));
+					}
+				} else {
+					switchStatement.statements().add(ASTNode.copySubtree(switchStatement.getAST(), astNode));
+				}
+			}
+			result.add(switchStatement);
+		} else if (statement instanceof TryStatement) {
+
+			TryStatement tryStatement = (TryStatement) statement;
+
+			Block tryBlock = tryStatement.getBody();
+			if (tryBlock != null) {
+				Block newTryBlock = processBlock(tryBlock, message, insertedNodes);
+				tryStatement.setBody((Block) ASTNode.copySubtree(tryStatement.getAST(), newTryBlock));
+			}
+
+			List catchList = tryStatement.catchClauses();
+			if(catchList != null){
+				for (Object object : catchList) {
+					if (object instanceof CatchClause) {
+						CatchClause catchClause = (CatchClause) object;
+						Block catchBlock = catchClause.getBody();
+						Block newCatchBlock = processBlock(catchBlock, message, insertedNodes);
+						catchClause.setBody((Block) ASTNode.copySubtree(catchClause.getAST(), newCatchBlock));
+					}
+				}
+			}
+
+			Block finallyBlock = tryStatement.getFinally();
+			if (finallyBlock != null) {
+				Block newFinallyBlock = processBlock(finallyBlock, message, insertedNodes);
+				tryStatement.setFinally((Block) ASTNode.copySubtree(tryStatement.getAST(), newFinallyBlock));
+			}
+
+			result.add(tryStatement);
+		} else {
+			AST ast = AST.newAST(AST.JLS8);
+			if(statement instanceof ReturnStatement || statement instanceof ThrowStatement){
+				for(Statement insert : insertedNodes){
+					result.add((Statement) ASTNode.copySubtree(ast, insert));
+				}
+			}
+			result.add((Statement) ASTNode.copySubtree(ast, statement));
+		}
+
+		return result;
+	}
+	
+	private Block processBlock(Block block, String message, List<Statement> insertedNodes) {
+		Block newBlock = AST.newAST(AST.JLS8).newBlock();
+		if (block == null) {
+			return newBlock;
+		}
+		
+		for (Object object : block.statements()) {
+			if (object instanceof Statement) {
+				Statement statement = (Statement) object;
+				List<Statement> newStatements = processMethodBody(statement, message, insertedNodes);
+				for (Statement newStatement : newStatements) {
+					newBlock.statements().add(ASTNode.copySubtree(newBlock.getAST(), newStatement));
+				}
+			} else {
+				if (Debugger.debugOn()) {
+					Debugger.debug(__name__ + "#processBlock UNKNOWN astNode : " + object.toString());
+				}
+			}
+		}
+		return newBlock;
+	}
 
 	
 	public static void main(String[] args) {
 		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("chart", 1);
-		String path = "/Users/Jiajun/Code/Java/defects4j/chart_1_buggy/source/org/jfree/chart/event/ChartChangeEvent.java";
-		String methodString = "org.jfree.chartevent.ChangeChartEvent#?#ChartChangeEvent#?,Object,JFreeChart";
+		String path = "/Users/Jiajun/Code/Java/manualD4J/chart_1_buggy/source/org/jfree/chart/LegendItem.java";
+		String methodString = "org.jfree.chart.LegendItem#void#setDataset#?,Dataset";
 		Set<Method> methods = new HashSet<>();
 		Method method = new Method(Identifier.getIdentifier(methodString));
 		methods.add(method);

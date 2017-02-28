@@ -17,6 +17,9 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+import com.google.googlejavaformat.Indent.If;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
 import localization.common.config.InfoBuilder;
@@ -43,35 +46,19 @@ public class InsertVariableGenerator {
 	public List<ASTNode> generate() {
 		List<ASTNode> statements = new ArrayList<>();
 
-		boolean insertField = true;
-		ASTNode astNode = _methodDeclaration.getParent();
-		while (!(astNode instanceof CompilationUnit)) {
-			if (astNode instanceof TypeDeclaration) {
-				break;
-			} else if (astNode instanceof AnonymousClassDeclaration) {
-				insertField = false;
-			}
-			astNode = astNode.getParent();
+		int modifiers = _methodDeclaration.getModifiers();
+		if(!Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)){
+			statements.add(GenStatement.genThisFieldDumpMethodInvocation(_locMessage));
 		}
-		if (!(astNode instanceof TypeDeclaration)) {
-			if (Debugger.debugOn()) {
-				Debugger.debug(__name__ + "#generate Parent node is not a TypeDeclaration of method : "
-						+ _methodDeclaration.toString());
-			}
-			return statements;
-		}
-
-		TypeDeclaration typeDeclaration = (TypeDeclaration) astNode;
-
-		if (insertField) {
-			// print field information
-			statements.addAll(insertFieldsPrinter(typeDeclaration));
-		}
-
+		
 		// print parameter information
 		List<ASTNode> params = _methodDeclaration.parameters();
-		if (params.size() > 0) {
-			statements.addAll(insertParamsPrinter(params));
+		for(ASTNode param : params){
+			if(param instanceof SingleVariableDeclaration){
+				SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration) param;
+				SimpleName praramName = singleVariableDeclaration.getName();
+				statements.add(GenStatement.genVariableDumpMethodInvation(_locMessage, praramName.getFullyQualifiedName()));
+			}
 		}
 
 		return statements;
