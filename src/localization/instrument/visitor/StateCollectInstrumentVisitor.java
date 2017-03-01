@@ -36,6 +36,7 @@ import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 
 import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
 
@@ -94,6 +95,9 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 	public boolean visit(CompilationUnit node) {
 		_cu = node;
 		_clazzName = node.getPackage().getName().getFullyQualifiedName();
+		if(_clazzName.equals("auxiliary")){
+			return false;
+		}
 		for (Object object : node.types()) {
 			if (object instanceof TypeDeclaration) {
 				TypeDeclaration type = (TypeDeclaration) object;

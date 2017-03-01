@@ -33,7 +33,8 @@ public class Constant {
 	// system properties
 	public final static String STR_OUT_PATH = HOME + "/out";
 	public final static String STR_LOG_FILE = STR_OUT_PATH + "/debug.log";
-	public final static String STR_TMP_OUTPUT_FILE = STR_OUT_PATH + "/path.out";
+	public final static String STR_TMP_D4J_OUTPUT_FILE = STR_OUT_PATH + "/d4j.out";
+	public final static String STR_TMP_INSTR_OUTPUT_FILE = STR_OUT_PATH + "/path.out";
 	public final static String STR_FAILED_TEST_FILE = STR_OUT_PATH + "/failed.test";
 	public final static String STR_PASSED_TEST_FILE = STR_OUT_PATH + "/passed.test";
 	public final static String STR_ALL_DATA_COLLECT_PATH = STR_OUT_PATH + "/data";

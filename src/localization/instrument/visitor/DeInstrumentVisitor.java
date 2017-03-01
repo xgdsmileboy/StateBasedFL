@@ -5,9 +5,11 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -17,6 +19,7 @@ import org.eclipse.jdt.core.dom.SwitchStatement;
 
 import localization.common.config.Constant;
 import localization.common.config.Identifier;
+import localization.common.java.JavaFile;
 import localization.common.java.Method;
 import localization.common.util.Debugger;
 
@@ -79,6 +82,14 @@ public class DeInstrumentVisitor extends TraversalVisitor {
 	@Override
 	public void setMethod(Method method) {
 		_method = method;
+	}
+	
+	public static void main(String[] args) {
+		String path = "/Users/Jiajun/Code/Java/manualD4J/lang_28_buggy/src/main/java/org/apache/commons/lang3/text/translate/CharSequenceTranslator.java";
+		String methodString = "org.apache.commons.lang3.text.translate.CharSequenceTranslator#String#translate#?,CharSequence";
+		CompilationUnit unit = JavaFile.genASTFromSource(JavaFile.readFileToString(path), ASTParser.K_COMPILATION_UNIT);
+		unit.accept(new DeInstrumentVisitor());
+		System.out.println(unit.toString());
 	}
 }
 
@@ -149,18 +160,27 @@ class RemoveStatementVisitor extends ASTVisitor{
 	}
 
 	private boolean IsInstrumentation(MethodInvocation node) {
-		if (node.getName().getFullyQualifiedName().equals("println") && node.arguments() != null) {
-			List<Object> args = node.arguments();
-			if (args != null && args.size() > 0 && args.get(0).toString().contains(Constant.INSTRUMENT_FLAG)) {
-				return true;
-			}
-//			if (args != null && args.size() > 0 && args.get(0) instanceof StringLiteral) {
-//				StringLiteral stringLiteral = (StringLiteral) args.get(0);
-//				if (stringLiteral.getLiteralValue().startsWith(Constant.INSTRUMENT_FLAG)) {
-//					return true;
-//				}
-//			}
+		Expression expression = node.getExpression();
+		if (expression != null && expression.toString().equals("auxiliary.Dumper") && node.getName().getFullyQualifiedName().equals("write")) {
+			return true;
 		}
 		return false;
 	}
+	
+//	private boolean IsInstrumentation(MethodInvocation node) {
+//		if (node.getName().getFullyQualifiedName().equals("println") && node.arguments() != null) {
+//			List<Object> args = node.arguments();
+//			if (args != null && args.size() > 0 && args.get(0).toString().contains(Constant.INSTRUMENT_FLAG)) {
+//				return true;
+//			}
+////			if (args != null && args.size() > 0 && args.get(0) instanceof StringLiteral) {
+////				StringLiteral stringLiteral = (StringLiteral) args.get(0);
+////				if (stringLiteral.getLiteralValue().startsWith(Constant.INSTRUMENT_FLAG)) {
+////					return true;
+////				}
+////			}
+//		}
+//		return false;
+//	}
+	
 }

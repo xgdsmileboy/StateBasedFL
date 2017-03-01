@@ -84,6 +84,9 @@ public class StatementInstrumentVisitor extends TraversalVisitor {
 	@Override
 	public boolean visit(CompilationUnit node) {
 		_cu = node;
+		if (node.getPackage().getName() != null && node.getPackage().getName().getFullyQualifiedName().equals("auxiliary")) {
+			return false;
+		}
 		if (_method != null) {
 			// filter unrelative files
 			String methodInfo = Identifier.getMessage(_method.getMethodID());

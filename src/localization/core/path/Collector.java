@@ -74,10 +74,6 @@ public class Collector {
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
-				if (!line.startsWith("[junit] ")) {
-					continue;
-				}
-				line = line.substring("[junit] ".length());
 				if (line.startsWith("[INST]T")) {
 					testStatement--;
 				}
@@ -88,10 +84,6 @@ public class Collector {
 			if(sampleCycle > 0){
 				while ((line = bufferedReader.readLine()) != null) {
 					line = line.trim();
-					if (!line.startsWith("[junit] ")) {
-						continue;
-					}
-					line = line.substring("[junit] ".length());
 					if (line.startsWith("[INST]M>>START")) {
 						sampleCycle--;
 					}
@@ -103,10 +95,6 @@ public class Collector {
 			String newLine = System.getProperty("line.separator");
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
-				if (!line.startsWith("[junit] ")) {
-					continue;
-				}
-				line = line.substring("[junit] ".length());
 				if (line.startsWith("[INST]M>>START")) {
 					continue;
 				}
@@ -198,10 +186,6 @@ public class Collector {
 //			Integer lastMethodID = 0;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
-				if (!line.startsWith("[junit] ")) {
-					continue;
-				}
-				line = line.substring("[junit] ".length());
 				if (line.startsWith("[INST]M>>END")) {
 					String[] guardStrings = line.split("#");
 					if(guardStrings.length < 3){
@@ -331,9 +315,9 @@ public class Collector {
 				LevelLogger.error("collectAllFailedTestState parse test method string error : " + methodString);
 				continue;
 			}
-			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, methodInfo[0], methodInfo[2]), Constant.STR_TMP_OUTPUT_FILE);
+			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, methodInfo[0], methodInfo[2]), Constant.STR_TMP_D4J_OUTPUT_FILE);
 			String testDataFile = Constant.STR_FAILED_DATA_COLLECT_PATH + Constant.PATH_SEPARATOR + methodInfo[0] + "_" + methodInfo[2];
-			collectFailedTestStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, testDataFile, testMethod.getTestStatementNumber(), 0);
+			collectFailedTestStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, testDataFile, testMethod.getTestStatementNumber(), 0);
 		}
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		// this state collecting instrument can be reused for collecting positive state, which can reduce the de/instrument cost
@@ -432,8 +416,8 @@ public class Collector {
 				continue;
 			}
 			String test = methodInfo[0] + "::" + methodInfo[2];
-			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, test), Constant.STR_TMP_OUTPUT_FILE);
-			Set<Integer> allClazzPath = collectClazzPath(Constant.STR_TMP_OUTPUT_FILE);
+			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, test), Constant.STR_TMP_D4J_OUTPUT_FILE);
+			Set<Integer> allClazzPath = collectClazzPath(Constant.STR_TMP_D4J_OUTPUT_FILE);
 			allPassedTestWithFullClazzPath.add(new Pair<String, Set<Integer>>(test, allClazzPath));
 		}
 		return allPassedTestWithFullClazzPath;
@@ -445,8 +429,8 @@ public class Collector {
 		
 		LevelLogger.info("collecting positive states ...");
 		//begin to collect positive state
-		ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo), Constant.STR_TMP_OUTPUT_FILE);
-		Set<Integer> collectStateMethods = collectPositiveStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, Constant.STR_POSITIVE_DATA_COLLECT_PATH);
+		ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo), Constant.STR_TMP_D4J_OUTPUT_FILE);
+		Set<Integer> collectStateMethods = collectPositiveStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, Constant.STR_POSITIVE_DATA_COLLECT_PATH);
 		//remove state collect instrument
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 		//end collect positive state
@@ -511,9 +495,9 @@ public class Collector {
 					if(!testMethod.getSecond().contains(clazzPathAndMethod)){
 						continue;
 					}
-					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, testMethod.getFirst()), Constant.STR_TMP_OUTPUT_FILE);
-					if(isFailedTest(Constant.STR_TMP_OUTPUT_FILE)){
-						collectNegativeStateIntoFile(Constant.STR_TMP_OUTPUT_FILE, Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
+					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, testMethod.getFirst()), Constant.STR_TMP_D4J_OUTPUT_FILE);
+					if(isFailedTest(Constant.STR_TMP_D4J_OUTPUT_FILE)){
+						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
 					}
 				}
 			}
@@ -571,8 +555,8 @@ public class Collector {
 	}
 	
 	private List<String> collectFailedTest(){
-		ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo), Constant.STR_TMP_OUTPUT_FILE);
-		return ExecutionPathBuider.findFailedTestFromFile(Constant.STR_TMP_OUTPUT_FILE);
+		ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo), Constant.STR_TMP_D4J_OUTPUT_FILE);
+		return ExecutionPathBuider.findFailedTestFromFile(Constant.STR_TMP_D4J_OUTPUT_FILE);
 	}
 	
 	private List<TestMethod> collectFailedTestTrace(List<String> allFailedTests){
@@ -593,11 +577,11 @@ public class Collector {
 			statementInstrumentVisitor.setMethod(method);
 			Instrument.execute(testJavaFile, statementInstrumentVisitor);
 			
-			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, string), Constant.STR_TMP_OUTPUT_FILE);
+			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, string), Constant.STR_TMP_D4J_OUTPUT_FILE);
 			
 			Instrument.execute(testJavaFile, new DeInstrumentVisitor(method));
 			
-			List<TestMethod> testMethods = ExecutionPathBuider.buildPathFromFile(_dynamicRuntimeInfo, Constant.STR_TMP_OUTPUT_FILE);
+			List<TestMethod> testMethods = ExecutionPathBuider.buildPathFromFile(_dynamicRuntimeInfo, Constant.STR_TMP_INSTR_OUTPUT_FILE);
 			
 			if(testMethods != null && testMethods.size() > 0){
 				int lastIndex = testMethods.size() - 1;
@@ -632,10 +616,7 @@ public class Collector {
 //			StringBuffer lastStringBuffer = new StringBuffer();
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
-				if (!line.startsWith("[junit] [INST]")) {
-					continue;
-				}
-				line = line.substring("[junit] [INST]".length());
+				line = line.substring("[INST]".length());
 				
 				if(line.startsWith("U")){
 					canCollectData = true;

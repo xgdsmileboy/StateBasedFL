@@ -82,6 +82,9 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 	public boolean visit(CompilationUnit node) {
 		_cu = node;
 		_clazzName = node.getPackage().getName().getFullyQualifiedName();
+		if(_clazzName.equals("auxiliary")){
+			return false;
+		}
 		for (Object object : node.types()) {
 			if (object instanceof TypeDeclaration) {
 				TypeDeclaration type = (TypeDeclaration) object;

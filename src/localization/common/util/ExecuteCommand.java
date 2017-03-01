@@ -25,6 +25,11 @@ public class ExecuteCommand {
 
 	private final String __name__ = "@ExecuteCommand ";
 
+	public static String deletePathFile() {
+		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_TMP_D4J_OUTPUT_FILE};
+		return execute(cmd);
+	}
+	
 	public static String moveFile(String source, String target) {
 		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_MV + source + " " + target };
 		return execute(cmd);
@@ -98,7 +103,7 @@ public class ExecuteCommand {
 	public static void newExecutedDefects4JTest(List<String> command) {
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		processBuilder.redirectErrorStream(true);
-		File file = new File(Constant.STR_TMP_OUTPUT_FILE);
+		File file = new File(Constant.STR_TMP_D4J_OUTPUT_FILE);
 		processBuilder.redirectOutput(file);
 		try {
 			Process process = processBuilder.start();
@@ -118,6 +123,7 @@ public class ExecuteCommand {
 	public static void executeDefects4JTest(String[] command, String outputFilePath) {
 		Process process = null;
 		try {
+			deletePathFile();
 			process = Runtime.getRuntime().exec(command);
 			File file = new File(outputFilePath);
 			if (!file.exists()) {

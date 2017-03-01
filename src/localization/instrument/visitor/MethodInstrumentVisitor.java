@@ -70,6 +70,9 @@ public class MethodInstrumentVisitor extends TraversalVisitor {
 
 	@Override
 	public boolean visit(CompilationUnit node) {
+		if (node.getPackage().getName() != null && node.getPackage().getName().getFullyQualifiedName().equals("auxiliary")) {
+			return false;
+		}
 		_cu = node;
 		if (_method != null) {
 			// filter unrelative files

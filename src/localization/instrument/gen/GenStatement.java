@@ -26,10 +26,20 @@ public class GenStatement {
 
 	private static AST ast = AST.newAST(AST.JLS8);
 	
+//	private static Statement genPrinter(Expression expression) {
+//		MethodInvocation methodInvocation = ast.newMethodInvocation();
+//		methodInvocation.setExpression(ast.newName("System.out"));
+//		methodInvocation.setName(ast.newSimpleName("println"));
+//		methodInvocation.arguments().add(expression);
+//		ExpressionStatement expressionStatement = ast.newExpressionStatement(methodInvocation);
+//		return expressionStatement;
+//	}
+	//replace the printer with a file writer
 	private static Statement genPrinter(Expression expression) {
+		//auxiliary.Dumper.write(expression);
 		MethodInvocation methodInvocation = ast.newMethodInvocation();
-		methodInvocation.setExpression(ast.newName("System.out"));
-		methodInvocation.setName(ast.newSimpleName("println"));
+		methodInvocation.setExpression(ast.newName("auxiliary.Dumper"));
+		methodInvocation.setName(ast.newSimpleName("write"));
 		methodInvocation.arguments().add(expression);
 		ExpressionStatement expressionStatement = ast.newExpressionStatement(methodInvocation);
 		return expressionStatement;

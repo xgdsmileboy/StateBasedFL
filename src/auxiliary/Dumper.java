@@ -1,5 +1,10 @@
 package auxiliary;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -11,6 +16,7 @@ public class Dumper {
 	private static boolean removeNewLine = true;
 	private final static int MAX_DEPTH = 4;
 	private final static int ARRAY_MAX_LENGTH = 5;
+	private final static String OUT_FILE_NAME = "/Users/Jiajun/Code/Java/fault-localization/StateBasedFL/out/path.out";
 	private static Dumper instance = new Dumper();
 
 	protected static Dumper getInstance() {
@@ -23,6 +29,44 @@ public class Dumper {
 		int callCount = 0;
 //		HashMap<Object, Integer> visited = new HashMap<Object, Integer>();
 		List visited = new ArrayList();
+	}
+	
+	public static boolean write(String message) {
+		if (message == null) {
+			return false;
+		}
+		File file = new File(OUT_FILE_NAME); 
+		if (!file.exists()) {
+			try {
+				file.getParentFile().mkdirs();
+				file.createNewFile();
+			} catch (IOException e) {
+				return false;
+			}
+		}
+		BufferedWriter bufferedWriter = null;
+		try {
+			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+		} catch (IOException e) {
+			return false;
+		}
+
+		try {
+			bufferedWriter.write(message);
+			bufferedWriter.write("\n");
+			bufferedWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (bufferedWriter != null) {
+				try {
+					bufferedWriter.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return true;
 	}
 
 	public static String dump(Object o) {
