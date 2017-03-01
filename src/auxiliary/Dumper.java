@@ -14,7 +14,7 @@ import java.util.List;
 public class Dumper {
 	
 	private static boolean removeNewLine = true;
-	private final static int MAX_DEPTH = 4;
+	private final static int MAX_DEPTH = 3;
 	private final static int ARRAY_MAX_LENGTH = 5;
 	private final static String OUT_FILE_NAME = "/Users/Jiajun/Code/Java/fault-localization/StateBasedFL/out/path.out";
 	private static Dumper instance = new Dumper();
@@ -145,9 +145,10 @@ public class Dumper {
 						continue;
 					}
 					//print variable name information
-//					String fSimpleName = getSimpleNameWithoutArrayQualifier(fields[i].getType());
-//					String fName = fields[i].getName();
-//					buffer.append(fName + "(" + fSimpleName + ")=");
+					String fSimpleName = getSimpleNameWithoutArrayQualifier(field.getType());
+					String fName = field.getName();
+//					buffer.append("(" + fName + ":" + fSimpleName + ")");
+					buffer.append("(" + fName + ")");
 //					buffer.append("(" + fSimpleName + ")");
 					
 					field.setAccessible(true);
