@@ -106,17 +106,17 @@ public class Collector {
 					}
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
-						allStates.get(id).append(newLine);
-						if(allStates.get(id).toString().length() > 1000){
-							if(allStates.get(id).toString().trim().length() > 1){
-								String methodString = Identifier.getMessage(id);
-								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-								String message = allStates.get(id).toString() + System.getProperty("line.separator");
-								JavaFile.writeStringToFile(filePath, message, true);
-							}
-							StringBuffer stringBuffer = new StringBuffer();
-							allStates.put(id, stringBuffer);
+						String message = allStates.get(id).toString().trim();
+						message += newLine;
+						if(message.length() > 1000){
+							String methodString = Identifier.getMessage(id);
+							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+							JavaFile.writeStringToFile(filePath, message, true);
+							message = "";
 						}
+						StringBuffer stringBuffer = new StringBuffer();
+						stringBuffer.append(message);
+						allStates.put(id, stringBuffer);
 					}
 					continue;
 				}
@@ -196,17 +196,17 @@ public class Collector {
 					}
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
-						allStates.get(id).append(newLine);
-						if(allStates.get(id).toString().length() > 1000){
-							if(allStates.get(id).toString().trim().length() > 1){
-								String methodString = Identifier.getMessage(id);
-								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-								String message = allStates.get(id).toString() + System.getProperty("line.separator");
-								JavaFile.writeStringToFile(filePath, message, true);
-							}
-							StringBuffer stringBuffer = new StringBuffer();
-							allStates.put(id, stringBuffer);
+						String message = allStates.get(id).toString().trim();
+						message += newLine;
+						if(message.length() > 1000){
+							String methodString = Identifier.getMessage(id);
+							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+							JavaFile.writeStringToFile(filePath, message, true);
+							message = "";
 						}
+						StringBuffer stringBuffer = new StringBuffer();
+						stringBuffer.append(message);
+						allStates.put(id, stringBuffer);
 					}
 					continue;
 				}
@@ -289,7 +289,7 @@ public class Collector {
 			}
 			String methodString = Identifier.getMessage(entry.getKey());
 			String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-			String message = sBuffer.toString() + System.getProperty("line.separator");
+			String message = sBuffer.toString().trim() + System.getProperty("line.separator");
 			JavaFile.writeStringToFile(filePath, message, true);
 		}
 		return collectStateMethod;
@@ -647,17 +647,17 @@ public class Collector {
 					}
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
-						allStates.get(id).append(newLine);
-						if(allStates.get(id).toString().length() > 1000){
-							if(allStates.get(id).toString().trim().length() > 1){
-								String methodString = Identifier.getMessage(id);
-								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-								String message = allStates.get(id).toString() + System.getProperty("line.separator");
-								JavaFile.writeStringToFile(filePath, message, true);
-							}
-							StringBuffer stringBuffer = new StringBuffer();
-							allStates.put(id, stringBuffer);
+						String message = allStates.get(id).toString().trim();
+						message += newLine;
+						if(message.length() > 1000){
+							String methodString = Identifier.getMessage(id);
+							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+							JavaFile.writeStringToFile(filePath, message, true);
+							message = "";
 						}
+						StringBuffer stringBuffer = new StringBuffer();
+						stringBuffer.append(message);
+						allStates.put(id, stringBuffer);
 					}
 					continue;
 				}

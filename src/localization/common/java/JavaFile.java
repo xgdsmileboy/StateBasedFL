@@ -145,7 +145,7 @@ public class JavaFile {
 		}
 		BufferedWriter bufferedWriter = null;
 		try {
-			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, append)));
+			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, append), "UTF-8"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -46,7 +46,7 @@ public class Dumper {
 		}
 		BufferedWriter bufferedWriter = null;
 		try {
-			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8"));
 		} catch (IOException e) {
 			return false;
 		}
