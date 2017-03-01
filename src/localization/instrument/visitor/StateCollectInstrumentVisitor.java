@@ -226,7 +226,7 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 				}
 			}
 			ASTNode lastStatement = blockStatement.get(blockStatement.size() - 1);
-			if(!(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
+			if(node.getReturnType2().toString().equals("void") && !(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
 				for(Statement insert : tmpNodeList){
 					blockStatement.add(ASTNode.copySubtree(ast, insert));
 				}
@@ -443,9 +443,12 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 
 	
 	public static void main(String[] args) {
-		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("chart", 1);
-		String path = "/Users/Jiajun/Code/Java/manualD4J/chart_1_buggy/source/org/jfree/chart/LegendItem.java";
-		String methodString = "org.jfree.chart.LegendItem#void#setDataset#?,Dataset";
+		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("lang", 28);
+		String path = "/Users/Jiajun/Code/Java/manualD4J/lang_28_buggy/src/main/java/org/apache/commons/lang3/text/translate/CharSequenceTranslator.java";
+		String methodString = "org.apache.commons.lang3.text.translate.CharSequenceTranslator#String#translate#?,CharSequence";
+//		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("chart", 1);
+//		String path = "/Users/Jiajun/Code/Java/manualD4J/chart_1_buggy/source/org/jfree/chart/LegendItem.java";
+//		String methodString = "org.jfree.chart.LegendItem#void#setDataset#?,Dataset";
 		Set<Method> methods = new HashSet<>();
 		Method method = new Method(Identifier.getIdentifier(methodString));
 		methods.add(method);
