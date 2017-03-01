@@ -25,9 +25,13 @@ public class ExecuteCommand {
 
 	private final String __name__ = "@ExecuteCommand ";
 
-	public static String deletePathFile() {
-		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_TMP_INSTR_OUTPUT_FILE};
-		return execute(cmd);
+	public static void deletePathFile() {
+//		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_TMP_INSTR_OUTPUT_FILE};
+//		return execute(cmd);
+		File file = new File(Constant.STR_TMP_INSTR_OUTPUT_FILE);
+		if(file.exists()){
+			file.delete();
+		}
 	}
 	
 	public static String moveFile(String source, String target) {
