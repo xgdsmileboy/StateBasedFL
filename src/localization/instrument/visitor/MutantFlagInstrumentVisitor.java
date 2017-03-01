@@ -542,9 +542,12 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 		methods.add(method1);
 		methods.add(method2);
 		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("lang", 1);
-		MutantFlagInstrumentVisitor mutantFlagInstrumentVisitor = new MutantFlagInstrumentVisitor(392, dynamicRuntimeInfo);
-		mutantFlagInstrumentVisitor.setAllMethods(methods);
+		MutantFlagInstrumentVisitor mutantFlagInstrumentVisitor = new MutantFlagInstrumentVisitor(224, dynamicRuntimeInfo);
+//		mutantFlagInstrumentVisitor.setAllMethods(methods);
 		unit.accept(mutantFlagInstrumentVisitor);
+		StateCollectInstrumentVisitor stateCollectInstrumentVisitor = new StateCollectInstrumentVisitor(Constant.INSTRUMENT_SOURCE, dynamicRuntimeInfo);
+		stateCollectInstrumentVisitor.setAllMethods(methods);
+		unit.accept(stateCollectInstrumentVisitor);
 		JavaFile.writeStringToFile("/Users/Jiajun/Code/Java/defects4j/lang_1_buggy/src/main/java/org/apache/commons/lang3/math/NumberUtils2.java", unit.toString());
 	}
 

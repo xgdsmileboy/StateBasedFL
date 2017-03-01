@@ -491,8 +491,9 @@ public class Collector {
 				ExecuteCommand.copyFile(mutantFile, originalFile);
 				int line = mutant.getStartLineNumber();
 				MutantFlagInstrumentVisitor mutantFlagInstrumentVisitor = new MutantFlagInstrumentVisitor(line, _dynamicRuntimeInfo);
-				mutantFlagInstrumentVisitor.setAllMethods(collectMethods);
+//				mutantFlagInstrumentVisitor.setAllMethods(collectMethods);
 				Instrument.execute(originalFile, mutantFlagInstrumentVisitor);
+				Instrument.execute(originalFile, stateCollectInstrumentVisitor);
 				int totalMethodCount = allPassedTestWithClazzPath.size();
 				for(Pair<String, Set<String>> testMethod : allPassedTestWithClazzPath){
 					LevelLogger.info("test remain " + totalMethodCount --);
@@ -618,6 +619,7 @@ public class Collector {
 			boolean canCollectData = false;
 			String newLine = System.getProperty("line.separator");
 //			StringBuffer lastStringBuffer = new StringBuffer();
+			int START_count = 0;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
 				line = line.substring("[INST]".length());
@@ -628,6 +630,7 @@ public class Collector {
 				}
 				if(line.startsWith("T")){
 					canCollectData = false;
+					START_count = 0;
 					continue;
 				}
 				
@@ -636,10 +639,16 @@ public class Collector {
 //						lastStringBuffer.append(newLine);
 //						isNewLine = false;
 //					}
+					if(canCollectData){
+						START_count ++;
+					}
 					continue;
 				}
 //				isNewLine = true;
 				if (line.startsWith("M>>END")) {
+					if(START_count > 0){
+						START_count --;
+					}
 					String[] guardStrings = line.split("#");
 					if(guardStrings.length < 3){
 						LevelLogger.error("#collectFailedTestStateIntoFile Parse End info error : " + line);
@@ -661,7 +670,7 @@ public class Collector {
 					}
 					continue;
 				}
-				if(!canCollectData){
+				if(START_count <= 0){
 					continue;
 				}
 				
