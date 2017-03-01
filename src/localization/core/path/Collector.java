@@ -108,10 +108,12 @@ public class Collector {
 					if(allStates.containsKey(id)){
 						allStates.get(id).append(newLine);
 						if(allStates.get(id).toString().length() > 1000){
-							String methodString = Identifier.getMessage(id);
-							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-							String message = allStates.get(id).toString() + System.getProperty("line.separator");
-							JavaFile.writeStringToFile(filePath, message, true);
+							if(allStates.get(id).toString().trim().length() > 1){
+								String methodString = Identifier.getMessage(id);
+								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+								String message = allStates.get(id).toString() + System.getProperty("line.separator");
+								JavaFile.writeStringToFile(filePath, message, true);
+							}
 							StringBuffer stringBuffer = new StringBuffer();
 							allStates.put(id, stringBuffer);
 						}
@@ -196,10 +198,12 @@ public class Collector {
 					if(allStates.containsKey(id)){
 						allStates.get(id).append(newLine);
 						if(allStates.get(id).toString().length() > 1000){
-							String methodString = Identifier.getMessage(id);
-							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-							String message = allStates.get(id).toString() + System.getProperty("line.separator");
-							JavaFile.writeStringToFile(filePath, message, true);
+							if(allStates.get(id).toString().trim().length() > 1){
+								String methodString = Identifier.getMessage(id);
+								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+								String message = allStates.get(id).toString() + System.getProperty("line.separator");
+								JavaFile.writeStringToFile(filePath, message, true);
+							}
 							StringBuffer stringBuffer = new StringBuffer();
 							allStates.put(id, stringBuffer);
 						}
@@ -645,10 +649,12 @@ public class Collector {
 					if(allStates.containsKey(id)){
 						allStates.get(id).append(newLine);
 						if(allStates.get(id).toString().length() > 1000){
-							String methodString = Identifier.getMessage(id);
-							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-							String message = allStates.get(id).toString() + System.getProperty("line.separator");
-							JavaFile.writeStringToFile(filePath, message, true);
+							if(allStates.get(id).toString().trim().length() > 1){
+								String methodString = Identifier.getMessage(id);
+								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+								String message = allStates.get(id).toString() + System.getProperty("line.separator");
+								JavaFile.writeStringToFile(filePath, message, true);
+							}
 							StringBuffer stringBuffer = new StringBuffer();
 							allStates.put(id, stringBuffer);
 						}
