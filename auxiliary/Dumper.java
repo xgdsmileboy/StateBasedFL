@@ -146,7 +146,7 @@ public class Dumper {
 					}
 					//print variable name information
 					String fSimpleName = getSimpleNameWithoutArrayQualifier(field.getType());
-					String fName = fields.getName();
+					String fName = field.getName();
 					buffer.append("(" + fName + ":" + fSimpleName + ")");
 //					buffer.append("(" + fSimpleName + ")");
 					
