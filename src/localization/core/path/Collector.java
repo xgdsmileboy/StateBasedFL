@@ -377,7 +377,7 @@ public class Collector {
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
 				line = line.trim();
-				if (!line.startsWith("[junit] [INST]M")) {
+				if (!line.startsWith("[INST]M")) {
 					continue;
 				}
 				String[] info = line.split("#");
@@ -417,7 +417,7 @@ public class Collector {
 			}
 			String test = methodInfo[0] + "::" + methodInfo[2];
 			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, test), Constant.STR_TMP_D4J_OUTPUT_FILE);
-			Set<Integer> allClazzPath = collectClazzPath(Constant.STR_TMP_D4J_OUTPUT_FILE);
+			Set<Integer> allClazzPath = collectClazzPath(Constant.STR_TMP_INSTR_OUTPUT_FILE);
 			allPassedTestWithFullClazzPath.add(new Pair<String, Set<Integer>>(test, allClazzPath));
 		}
 		return allPassedTestWithFullClazzPath;
