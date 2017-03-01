@@ -215,7 +215,10 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 			}
 		} else {
 			List<Statement> tmpNodeList = new ArrayList<>();
-			tmpNodeList.add(GenStatement.genThisFieldDumpMethodInvocation(message));
+			if(!Modifier.isStatic(node.getModifiers())){
+				tmpNodeList.add(GenStatement.genThisFieldDumpMethodInvocation(message));
+			}
+			
 			for(String param : paramList){
 				tmpNodeList.add(GenStatement.genVariableDumpMethodInvation(message, param));
 			}
