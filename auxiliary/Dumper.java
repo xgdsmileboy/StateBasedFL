@@ -16,6 +16,7 @@ public class Dumper {
 	private static boolean removeNewLine = true;
 	private final static int MAX_DEPTH = 3;
 	private final static int ARRAY_MAX_LENGTH = 5;
+	private final static long MAX_OUTPUT_FILE_SIZE = 1000;
 	private final static String OUT_FILE_NAME = "/Users/Jiajun/Code/Java/fault-localization/StateBasedFL/out/path.out";
 	private static Dumper instance = new Dumper();
 
@@ -43,6 +44,9 @@ public class Dumper {
 			} catch (IOException e) {
 				return false;
 			}
+		}
+		if((file.length() >> 20) > MAX_OUTPUT_FILE_SIZE){
+			return true;
 		}
 		BufferedWriter bufferedWriter = null;
 		try {
