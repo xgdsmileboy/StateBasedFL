@@ -125,7 +125,11 @@ public class Dumper {
 
 	protected static String dump(Object o, DumpContext ctx) {
 		if (o == null) {
-			return null;
+			if(ctx.callCount == 0){
+				return "{null}";
+			} else {
+				return null;
+			}
 		}
 
 		ctx.callCount++;
@@ -159,6 +163,7 @@ public class Dumper {
 				method.setAccessible(true);
 				returnObject = method.invoke(null, elemets);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			
 //			JSONArray jsonArray = JSONArray.fromObject(elemets);
@@ -174,6 +179,7 @@ public class Dumper {
 				method = javaClass.getMethod("accumulate", String.class, Object.class);
 				method.setAccessible(true);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			
 			while (oClass != null && oClass != Object.class) {

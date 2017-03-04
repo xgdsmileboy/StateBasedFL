@@ -125,7 +125,11 @@ public class Dumper {
 
 	protected static String dump(Object o, DumpContext ctx) {
 		if (o == null) {
-			return null;
+			if(ctx.callCount == 0){
+				return "{null}";
+			} else {
+				return null;
+			}
 		}
 
 		ctx.callCount++;
