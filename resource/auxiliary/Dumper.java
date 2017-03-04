@@ -24,7 +24,7 @@ public class Dumper {
 	private final static int ARRAY_MAX_LENGTH = 5;
 	private final static String OUT_AND_LIB_PATH = "/Users/Jiajun/Code/Java/fault-localization/StateBasedFL";
 	private final static String OUT_FILE_NAME = OUT_AND_LIB_PATH + "/out/path.out";
-	private final static String LIB_FILE_PATH = OUT_AND_LIB_PATH + "auxiliary/lib";
+	private final static String LIB_FILE_PATH = OUT_AND_LIB_PATH + "/resource/auxiliary/lib";
 	private static Dumper instance = new Dumper();
 
 	protected static Dumper getInstance() {
@@ -159,6 +159,7 @@ public class Dumper {
 				method.setAccessible(true);
 				returnObject = method.invoke(null, elemets);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			
 //			JSONArray jsonArray = JSONArray.fromObject(elemets);
@@ -174,6 +175,7 @@ public class Dumper {
 				method = javaClass.getMethod("accumulate", String.class, Object.class);
 				method.setAccessible(true);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			
 			while (oClass != null && oClass != Object.class) {

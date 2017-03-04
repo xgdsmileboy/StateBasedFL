@@ -45,6 +45,6 @@ public class Main {
 		if(!file.exists()){
 			file.mkdirs();
 		}
-		ExecuteCommand.copyFile(Constant.HOME+"/auxiliary/Dumper.java", target + "/Dumper.java");
+		ExecuteCommand.copyFile(Constant.HOME+"/resource/auxiliary/Dumper.java", target + "/Dumper.java");
 	}
 }

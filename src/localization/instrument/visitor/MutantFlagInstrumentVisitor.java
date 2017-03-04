@@ -34,6 +34,7 @@ import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
@@ -183,20 +184,37 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 
 		int startLine = _cu.getLineNumber(node.getStartPosition());
 		int endLine = _cu.getLineNumber(node.getStartPosition() + node.getLength());
+		
 		if(startLine <= _mutantLineNumber && _mutantLineNumber <= endLine){
-			
 			AST ast = AST.newAST(AST.JLS8);
+			
+			int lastStatementEndLine = startLine;
+			boolean maybeLastStatementIsRemoved = true;
+			
 			for (; i < methodBody.statements().size(); i++) {
 				ASTNode astNode = (Statement) methodBody.statements().get(i);
 				int beforeLine = _cu.getLineNumber(astNode.getStartPosition());
 				int afterline = _cu.getLineNumber(astNode.getStartPosition() + astNode.getLength());
+				if(lastStatementEndLine < _mutantLineNumber && _mutantLineNumber < beforeLine){
+					String mutantFlagMessage = Constant.INSTRUMENT_FLAG + Constant.INSTRUMENT_MUTANT + "#" + keyValue;
+					ASTNode inserted = GenStatement.genASTNode(mutantFlagMessage, 0);
+					blockStatement.add(inserted);
+					maybeLastStatementIsRemoved = false;
+				}
+				lastStatementEndLine = afterline;
 				if(_mutantLineNumber >= beforeLine && _mutantLineNumber <= afterline){
 					blockStatement.addAll(process(astNode, keyValue));
 				}else{
 					blockStatement.add(ASTNode.copySubtree(ast, astNode));
 				}
 			}
-			
+			if(maybeLastStatementIsRemoved){
+				if(lastStatementEndLine < _mutantLineNumber && _mutantLineNumber < endLine){
+					String mutantFlagMessage = Constant.INSTRUMENT_FLAG + Constant.INSTRUMENT_MUTANT + "#" + keyValue;
+					ASTNode inserted = GenStatement.genASTNode(mutantFlagMessage, 0);
+					blockStatement.add(inserted);
+				}
+			}
 		} else if(needInstrument) {
 			AST ast = AST.newAST(AST.JLS8);
 			for (; i < methodBody.statements().size(); i++) {
@@ -521,11 +539,31 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 		if (block == null) {
 			return newBlock;
 		}
+		int blockStartLine = _cu.getLineNumber(block.getStartPosition());;
+		int blockEndLine = _cu.getLineNumber(block.getStartPosition() + block.getLength());
+		int lastStatementEndLine = blockStartLine;
+		boolean maybeTheLastStatementIsRemoved = true;
 		for (Object object : block.statements()) {
 			ASTNode astNode = (ASTNode) object;
+			int newStartLine = _cu.getLineNumber(astNode.getStartPosition());
+			int newEndLine = _cu.getLineNumber(astNode.getStartPosition() + astNode.getLength());
+			if(lastStatementEndLine < _mutantLineNumber  && _mutantLineNumber < newStartLine){
+				String mutantFlagMessage = Constant.INSTRUMENT_FLAG + Constant.INSTRUMENT_MUTANT + "#" + keyValue;
+				ASTNode inserted = GenStatement.genASTNode(mutantFlagMessage, 0);
+				newBlock.statements().add(ASTNode.copySubtree(newBlock.getAST(), inserted));
+				maybeTheLastStatementIsRemoved = false;
+			}
+			lastStatementEndLine = newEndLine;
 			List<ASTNode> newStatements = process(astNode, keyValue);
 			for (ASTNode newStatement : newStatements) {
 				newBlock.statements().add(ASTNode.copySubtree(newBlock.getAST(), newStatement));
+			}
+		}
+		if(maybeTheLastStatementIsRemoved){
+			if(lastStatementEndLine < _mutantLineNumber && _mutantLineNumber < blockEndLine){
+				String mutantFlagMessage = Constant.INSTRUMENT_FLAG + Constant.INSTRUMENT_MUTANT + "#" + keyValue;
+				ASTNode inserted = GenStatement.genASTNode(mutantFlagMessage, 0);
+				newBlock.statements().add(ASTNode.copySubtree(newBlock.getAST(), inserted));
 			}
 		}
 		return newBlock;
@@ -539,15 +577,16 @@ public class MutantFlagInstrumentVisitor extends TraversalVisitor {
 		Method method1 = new Method(Identifier.getIdentifier(methodString));
 		methodString = "org.apache.commons.lang3.math.NumberUtils#double#toDouble#?,String";
 		Method method2 = new Method(Identifier.getIdentifier(methodString));
-		methods.add(method1);
-		methods.add(method2);
+//		methods.add(method1);
+//		methods.add(method2);
+		methods = null;
 		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("lang", 1);
-		MutantFlagInstrumentVisitor mutantFlagInstrumentVisitor = new MutantFlagInstrumentVisitor(224, dynamicRuntimeInfo);
+		MutantFlagInstrumentVisitor mutantFlagInstrumentVisitor = new MutantFlagInstrumentVisitor(496, dynamicRuntimeInfo);
 //		mutantFlagInstrumentVisitor.setAllMethods(methods);
 		unit.accept(mutantFlagInstrumentVisitor);
 		StateCollectInstrumentVisitor stateCollectInstrumentVisitor = new StateCollectInstrumentVisitor(Constant.INSTRUMENT_SOURCE, dynamicRuntimeInfo);
 		stateCollectInstrumentVisitor.setAllMethods(methods);
-		unit.accept(stateCollectInstrumentVisitor);
+//		unit.accept(stateCollectInstrumentVisitor);
 		JavaFile.writeStringToFile("/Users/Jiajun/Code/Java/defects4j/lang_1_buggy/src/main/java/org/apache/commons/lang3/math/NumberUtils2.java", unit.toString());
 	}
 
