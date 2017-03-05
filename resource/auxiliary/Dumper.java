@@ -20,6 +20,7 @@ public class Dumper {
 	private static URLClassLoader classLoader = null;
 	
 	private static boolean removeNewLine = true;
+	private final static long MAX_OUTPUT_FILE_SIZE = 100;
 	private final static int MAX_DEPTH = 3;
 	private final static int ARRAY_MAX_LENGTH = 5;
 	private final static String OUT_AND_LIB_PATH = "/Users/Jiajun/Code/Java/fault-localization/StateBasedFL";
@@ -53,6 +54,11 @@ public class Dumper {
 				return false;
 			}
 		}
+		
+		if((file.length() >> 20) > MAX_OUTPUT_FILE_SIZE){
+			return true;
+		}
+		
 		BufferedWriter bufferedWriter = null;
 		try {
 			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8"));
