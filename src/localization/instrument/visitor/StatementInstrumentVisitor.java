@@ -128,6 +128,18 @@ public class StatementInstrumentVisitor extends TraversalVisitor {
 		if (_method != null && !_method.match(node, _clazzName)) {
 			return true;
 		}
+		
+		String name = node.getName().getFullyQualifiedName();
+		if(Modifier.isStatic(node.getModifiers())){
+			return true;
+		}
+		
+		if (_methodFlag.equals(Constant.INSTRUMENT_TEST) && (name.equals("setUp") || name.equals("countTestCases")
+				|| name.equals("createResult") || name.equals("run") || name.equals("runBare") || name.equals("runTest")
+				|| name.equals("tearDown") || name.equals("toString") || name.equals("getName")
+				|| name.equals("setName"))){
+			return true;
+		}
 
 //		StringBuffer buffer = new StringBuffer(Constant.INSTRUMENT_KEY_TYPE + _clazzName);
 		StringBuffer buffer = new StringBuffer(_clazzName + "#");

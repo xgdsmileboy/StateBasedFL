@@ -62,7 +62,7 @@ public class MethodInstrumentVisitor extends TraversalVisitor {
 	public void setFlag(String methodFlag) {
 		_methodFlag = methodFlag;
 	}
-	
+
 	@Override
 	public void setMethod(Method method) {
 		_method = method;
@@ -70,7 +70,8 @@ public class MethodInstrumentVisitor extends TraversalVisitor {
 
 	@Override
 	public boolean visit(CompilationUnit node) {
-		if (node.getPackage().getName() != null && node.getPackage().getName().getFullyQualifiedName().equals("auxiliary")) {
+		if (node.getPackage().getName() != null
+				&& node.getPackage().getName().getFullyQualifiedName().equals("auxiliary")) {
 			return false;
 		}
 		_cu = node;
@@ -115,74 +116,88 @@ public class MethodInstrumentVisitor extends TraversalVisitor {
 		}
 
 		String name = node.getName().getFullyQualifiedName();
-		if (node.getBody() != null) {
-			Block body = node.getBody();
-			List<ASTNode> backupStatement = new ArrayList<>();
-			AST ast = AST.newAST(AST.JLS8);
 
-			ASTNode thisOrSuperStatement = null;
-			if (body.statements().size() > 0) {
-				ASTNode astNode = (ASTNode) body.statements().get(0);
-				int startIndex = 0;
-				if (astNode instanceof SuperConstructorInvocation
-						|| (astNode instanceof ConstructorInvocation && astNode.toString().startsWith("this"))) {
-					thisOrSuperStatement = ASTNode.copySubtree(ast, astNode);
-					startIndex = 1;
-				}
-				for (; startIndex < body.statements().size(); startIndex++) {
-					ASTNode statement = (ASTNode) body.statements().get(startIndex);
-					backupStatement.add(ASTNode.copySubtree(ast, statement));
-				}
-			}
-
-//			StringBuffer buffer = new StringBuffer(Constant.INSTRUMENT_KEY_TYPE + _clazzName);
-			StringBuffer buffer = new StringBuffer(_clazzName + "#");
-
-			String retType = "?";
-			if (node.getReturnType2() != null) {
-				retType = node.getReturnType2().toString();
-			}
-			StringBuffer param = new StringBuffer("?");
-			for (Object object : node.parameters()) {
-				if (!(object instanceof SingleVariableDeclaration)) {
-					if (Debugger.debugOn()) {
-						Debugger.debug(__name__ + "#visit Parameter is not a SingleVariableDeclaration : "
-								+ object.toString());
-					}
-					param.append(",?");
-				} else {
-					SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration) object;
-					param.append("," + singleVariableDeclaration.getType().toString());
-				}
-			}
-			// add method return type
-//			buffer.append(Constant.INSTRUMENT_KEY_METHOD + retType + "#");
-			buffer.append(retType + "#");
-			// add method name
-			buffer.append(node.getName().getFullyQualifiedName() + "#");
-			// add method params, NOTE: the first parameter starts at index 1.
-			buffer.append(param);
-			String message = buffer.toString();
-			int keyValue =Identifier.getIdentifier(message);
-			//optimize instrument
-			message = Constant.INSTRUMENT_FLAG + _methodFlag + "#" + String.valueOf(keyValue);
-			
-			int lineNumber = _cu.getLineNumber(node.getBody().getStartPosition());
-
-			Statement insert = GenStatement.genASTNode(message, lineNumber);
-
-			body.statements().clear();
-			if (thisOrSuperStatement != null) {
-				body.statements().add(ASTNode.copySubtree(body.getAST(), thisOrSuperStatement));
-			}
-			body.statements().add(ASTNode.copySubtree(body.getAST(), insert));
-			for (ASTNode statement : backupStatement) {
-				body.statements().add(ASTNode.copySubtree(body.getAST(), statement));
-			}
+		if(Modifier.isStatic(node.getModifiers())){
+			return true;
 		}
+		
+		if (_methodFlag.equals(Constant.INSTRUMENT_TEST) && (name.equals("setUp") || name.equals("countTestCases")
+				|| name.equals("createResult") || name.equals("run") || name.equals("runBare") || name.equals("runTest")
+				|| name.equals("tearDown") || name.equals("toString") || name.equals("getName")
+				|| name.equals("setName"))){
+			return true;
+		}
+
+			if (node.getBody() != null) {
+				Block body = node.getBody();
+				List<ASTNode> backupStatement = new ArrayList<>();
+				AST ast = AST.newAST(AST.JLS8);
+
+				ASTNode thisOrSuperStatement = null;
+				if (body.statements().size() > 0) {
+					ASTNode astNode = (ASTNode) body.statements().get(0);
+					int startIndex = 0;
+					if (astNode instanceof SuperConstructorInvocation
+							|| (astNode instanceof ConstructorInvocation && astNode.toString().startsWith("this"))) {
+						thisOrSuperStatement = ASTNode.copySubtree(ast, astNode);
+						startIndex = 1;
+					}
+					for (; startIndex < body.statements().size(); startIndex++) {
+						ASTNode statement = (ASTNode) body.statements().get(startIndex);
+						backupStatement.add(ASTNode.copySubtree(ast, statement));
+					}
+				}
+
+				// StringBuffer buffer = new
+				// StringBuffer(Constant.INSTRUMENT_KEY_TYPE + _clazzName);
+				StringBuffer buffer = new StringBuffer(_clazzName + "#");
+
+				String retType = "?";
+				if (node.getReturnType2() != null) {
+					retType = node.getReturnType2().toString();
+				}
+				StringBuffer param = new StringBuffer("?");
+				for (Object object : node.parameters()) {
+					if (!(object instanceof SingleVariableDeclaration)) {
+						if (Debugger.debugOn()) {
+							Debugger.debug(__name__ + "#visit Parameter is not a SingleVariableDeclaration : "
+									+ object.toString());
+						}
+						param.append(",?");
+					} else {
+						SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration) object;
+						param.append("," + singleVariableDeclaration.getType().toString());
+					}
+				}
+				// add method return type
+				// buffer.append(Constant.INSTRUMENT_KEY_METHOD + retType +
+				// "#");
+				buffer.append(retType + "#");
+				// add method name
+				buffer.append(node.getName().getFullyQualifiedName() + "#");
+				// add method params, NOTE: the first parameter starts at index
+				// 1.
+				buffer.append(param);
+				String message = buffer.toString();
+				int keyValue = Identifier.getIdentifier(message);
+				// optimize instrument
+				message = Constant.INSTRUMENT_FLAG + _methodFlag + "#" + String.valueOf(keyValue);
+
+				int lineNumber = _cu.getLineNumber(node.getBody().getStartPosition());
+
+				Statement insert = GenStatement.genASTNode(message, lineNumber);
+
+				body.statements().clear();
+				if (thisOrSuperStatement != null) {
+					body.statements().add(ASTNode.copySubtree(body.getAST(), thisOrSuperStatement));
+				}
+				body.statements().add(ASTNode.copySubtree(body.getAST(), insert));
+				for (ASTNode statement : backupStatement) {
+					body.statements().add(ASTNode.copySubtree(body.getAST(), statement));
+				}
+			}
 
 		return true;
 	}
-
 
 }

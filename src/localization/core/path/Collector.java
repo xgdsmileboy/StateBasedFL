@@ -444,6 +444,7 @@ public class Collector {
 		Instrument.execute(_sourceSRCPath, new MethodInstrumentVisitor());
 		List<Pair<String, Set<Integer>>> allPassedTestWithMethod = collectAllMutateFile(collectStateMethods);
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
+		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		
 		Set<Integer> allMethodsID = new HashSet<>();
 		List<Pair<String, Set<String>>> allPassedTestWithClazzPath = new ArrayList<>();
