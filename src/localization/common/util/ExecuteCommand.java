@@ -27,7 +27,8 @@ public class ExecuteCommand {
 	private final static long TIME_OUT_MINUS = 60;
 	private final static long TIME_OUT = 1000 * 60 * TIME_OUT_MINUS; // 1 hour
 
-	private static Process process = null;
+	private static Process _process = null;
+	private static Timer _timer = null;
 	
 	public static void deletePathFile() {
 		File file = new File(Constant.STR_TMP_INSTR_OUTPUT_FILE);
@@ -68,10 +69,9 @@ public class ExecuteCommand {
 	}
 	
 	public static String execute(String... command) {
-//		Process process = null;
+		Process process = null;
 		String result = null;
 		try {
-			setTimeOut();
 			process = Runtime.getRuntime().exec(command);
 			ByteArrayOutputStream resultOutStream = new ByteArrayOutputStream();
 			InputStream errorInStream = new BufferedInputStream(process.getErrorStream());
@@ -133,15 +133,15 @@ public class ExecuteCommand {
 		try {
 			deletePathFile();
 			setTimeOut();
-			process = Runtime.getRuntime().exec(command);
+			_process = Runtime.getRuntime().exec(command);
 			File file = new File(outputFilePath);
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
 				file.createNewFile();
 			}
 			FileOutputStream resultOutStream = new FileOutputStream(file);
-			InputStream errorInStream = new BufferedInputStream(process.getErrorStream());
-			InputStream processInStream = new BufferedInputStream(process.getInputStream());
+			InputStream errorInStream = new BufferedInputStream(_process.getErrorStream());
+			InputStream processInStream = new BufferedInputStream(_process.getInputStream());
 			int num = 0;
 			byte[] bs = new byte[1024];
 			while ((num = errorInStream.read(bs)) != -1) {
@@ -160,36 +160,34 @@ public class ExecuteCommand {
 			resultOutStream = null;
 			
 			try {
-				process.waitFor();
+				_process.waitFor();
 			} catch (InterruptedException e) {
 				Debugger.debug("Process interrupted ... ");
 			}
 		} catch (IOException e) {
 			Debugger.debug("Procss output redirect exception ... ");
 		} finally {
-			if (process != null) {
-				process.destroy();
+			if (_process != null) {
+				_process.destroy();
 			}
-			process = null;
+			_process = null;
+		}
+		if(_timer != null){
+			_timer.cancel();
+			_timer = null;
 		}
 	}
 	
 	private static void setTimeOut(){
-		Timer timer = new Timer();
-		timer.schedule(new KillProcessTask(timer), TIME_OUT);
+		_timer = new Timer();
+		_timer.schedule(new KillProcessTask(), TIME_OUT);
 	}
 
 	private static class KillProcessTask extends TimerTask {
-
-		private Timer _timer;
-		public KillProcessTask(Timer timer) {
-			_timer = timer;
-		}
-		
 		@Override
 		public void run() {
-			if(process != null){
-				process.destroy();
+			if(_process != null){
+				_process.destroy();
 			}
 			if(_timer != null){
 				_timer.cancel();
