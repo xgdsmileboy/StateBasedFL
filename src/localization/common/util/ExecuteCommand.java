@@ -24,8 +24,8 @@ public class ExecuteCommand {
 
 	private final String __name__ = "@ExecuteCommand ";
 
-	private final static long TIME_OUT_MINUS = 60;
-	private final static long TIME_OUT = 1000 * 60 * TIME_OUT_MINUS; // 1 hour
+	private static long TIME_OUT_MINUS = 60;
+	private static long TIME_OUT_MILIS = 1000 * 60 * TIME_OUT_MINUS; // 1 hour
 
 	private static Process _process = null;
 	private static Timer _timer = null;
@@ -128,6 +128,12 @@ public class ExecuteCommand {
 		executeDefects4JTest(cmds, Constant.STR_TMP_D4J_OUTPUT_FILE);
 	}
 
+	public static void executeDefects4JTest(String[] command, String outputFilePath, long timeout) {
+		TIME_OUT_MINUS = timeout;
+		TIME_OUT_MILIS = 1000 * 60 * timeout;
+		executeDefects4JTest(command, outputFilePath);
+	}
+	
 	public static void executeDefects4JTest(String[] command, String outputFilePath) {
 //		Process process = null;
 		try {
@@ -180,7 +186,7 @@ public class ExecuteCommand {
 	
 	private static void setTimeOut(){
 		_timer = new Timer();
-		_timer.schedule(new KillProcessTask(), TIME_OUT);
+		_timer.schedule(new KillProcessTask(), TIME_OUT_MILIS);
 	}
 
 	private static class KillProcessTask extends TimerTask {

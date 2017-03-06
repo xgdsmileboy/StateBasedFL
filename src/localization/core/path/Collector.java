@@ -110,15 +110,16 @@ public class Collector {
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
 						String message = allStates.get(id).toString().trim();
-						message += newLine;
-						if(message.length() > 1000){
+//						message += newLine;
+						if(message.length() > 0){
+							message += newLine;
 							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
 							JavaFile.writeStringToFile(filePath, message, true);
-							message = "";
+//							message = "";
 						}
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(message);
+//						stringBuffer.append(message);
 						allStates.put(id, stringBuffer);
 					}
 					continue;
@@ -166,7 +167,7 @@ public class Collector {
 		
 		for(Entry<Integer, StringBuffer> entry : allStates.entrySet()){
 			StringBuffer sBuffer = entry.getValue();
-			if(sBuffer == null || sBuffer.toString().trim().length() < 1){
+			if(sBuffer == null || sBuffer.toString().trim().length() <= 0){
 				continue;
 			}
 			String methodString = Identifier.getMessage(entry.getKey());
@@ -203,15 +204,16 @@ public class Collector {
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
 						String message = allStates.get(id).toString().trim();
-						message += newLine;
-						if(message.length() > 1000){
+//						message += newLine;
+						if(message.length() > 0){
+							message += newLine;
 							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
 							JavaFile.writeStringToFile(filePath, message, true);
-							message = "";
+//							message = "";
 						}
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(message);
+//						stringBuffer.append(message);
 						allStates.put(id, stringBuffer);
 					}
 					continue;
@@ -290,7 +292,7 @@ public class Collector {
 		
 		for(Entry<Integer, StringBuffer> entry : allStates.entrySet()){
 			StringBuffer sBuffer = entry.getValue();
-			if(sBuffer == null || sBuffer.toString().trim().length() < 1){
+			if(sBuffer == null || sBuffer.toString().trim().length() <= 0){
 				continue;
 			}
 			String methodString = Identifier.getMessage(entry.getKey());
@@ -510,7 +512,7 @@ public class Collector {
 					if(!testMethod.getSecond().contains(clazzPathAndMethod)){
 						continue;
 					}
-					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, testMethod.getFirst()), Constant.STR_TMP_D4J_OUTPUT_FILE);
+					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, testMethod.getFirst()), Constant.STR_TMP_D4J_OUTPUT_FILE, 5L);
 					if(isFailedTest(Constant.STR_TMP_D4J_OUTPUT_FILE)){
 						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
 					}
@@ -670,15 +672,16 @@ public class Collector {
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
 						String message = allStates.get(id).toString().trim();
-						message += newLine;
-						if(message.length() > 1000){
+//						message += newLine;
+						if(message.length() > 0){
+							message += newLine;
 							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
 							JavaFile.writeStringToFile(filePath, message, true);
-							message = "";
+//							message = "";
 						}
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(message);
+//						stringBuffer.append(message);
 						allStates.put(id, stringBuffer);
 					}
 					continue;
@@ -728,7 +731,7 @@ public class Collector {
 		
 		for(Entry<Integer, StringBuffer> entry : allStates.entrySet()){
 			StringBuffer sBuffer = entry.getValue();
-			if(sBuffer == null || sBuffer.toString().trim().length() < 1){
+			if(sBuffer == null || sBuffer.toString().trim().length() <= 0){
 				continue;
 			}
 			String methodString = Identifier.getMessage(entry.getKey());
