@@ -382,6 +382,19 @@ public class InfoBuilder {
 		return cmd;
 	}
 	
+	public static String[] buildDefects4JTestCommandWithTimeout(DynamicRuntimeInfo dynamicRuntimeInfo, String testInfo, long timeoutSeconds){
+		StringBuffer args = new StringBuffer();
+		if (check(dynamicRuntimeInfo) && testInfo != null) {
+			// defects4j test -t
+			// org.apache.commons.lang3.AnnotationUtilsTest::testEquivalence
+			String projectPath = buildSingleProjectPath(dynamicRuntimeInfo);
+			args.append(Constant.COMMAND_CD + projectPath + " && ");
+			args.append("timeout " + String.valueOf(timeoutSeconds) + " " + Constant.COMMAND_DEFECTS4J + " test -t " + testInfo);
+		}
+		String[] cmd = new String[] { "/bin/bash", "-c", args.toString() };
+		return cmd;
+	}
+	
 	public static String[] buildDefects4JTestCommand(DynamicRuntimeInfo dynamicRuntimeInfo) {
 		StringBuffer args = new StringBuffer();
 		if (check(dynamicRuntimeInfo)) {

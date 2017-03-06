@@ -512,7 +512,8 @@ public class Collector {
 					if(!testMethod.getSecond().contains(clazzPathAndMethod)){
 						continue;
 					}
-					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, testMethod.getFirst()), Constant.STR_TMP_D4J_OUTPUT_FILE, 5L);
+					//limiting the running time as 5 minutes for each test case
+					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommandWithTimeout(_dynamicRuntimeInfo, testMethod.getFirst(), 60 * 5L), Constant.STR_TMP_D4J_OUTPUT_FILE);
 					if(isFailedTest(Constant.STR_TMP_D4J_OUTPUT_FILE)){
 						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
 					}

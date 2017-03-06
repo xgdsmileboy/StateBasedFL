@@ -138,7 +138,7 @@ public class ExecuteCommand {
 //		Process process = null;
 		try {
 			deletePathFile();
-			setTimeOut();
+//			setTimeOut();
 			_process = Runtime.getRuntime().exec(command);
 			File file = new File(outputFilePath);
 			if (!file.exists()) {
