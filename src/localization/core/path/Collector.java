@@ -67,6 +67,9 @@ public class Collector {
 	
 	private void collectFailedTestStateIntoFile(String sourceFilePath, String targetFileContainer, int testStatement, int sampleCycle) {
 		File file = new File(sourceFilePath);
+		if(!file.exists()){
+			return;
+		}
 		Map<Integer, StringBuffer> allStates = new HashMap<>();
 		BufferedReader bufferedReader = null;
 		try {
@@ -177,6 +180,9 @@ public class Collector {
 		File file = new File(sourceFilePath);
 		Map<Integer, StringBuffer> allStates = new HashMap<>();
 		Set<Integer> collectStateMethod = new HashSet<>();
+		if(!file.exists()){
+			return collectStateMethod;
+		}
 		Integer currentTest = 0;
 		BufferedReader bufferedReader = null;
 		try {
@@ -375,6 +381,9 @@ public class Collector {
 		
 		File file = new File(sourceFile);
 		Set<Integer> allMethodsID = new HashSet<>();
+		if(!file.exists()){
+			return allMethodsID;
+		}
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = new BufferedReader(new FileReader(file));
@@ -611,6 +620,9 @@ public class Collector {
 	
 	private void collectNegativeStateIntoFile(String sourceFile, String targetFileContainer){
 		File file = new File(sourceFile);
+		if(!file.exists()){
+			return;
+		}
 		Map<Integer, StringBuffer> allStates = new HashMap<>();
 		BufferedReader bufferedReader = null;
 		try {

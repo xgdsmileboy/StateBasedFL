@@ -6,10 +6,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-
-import javax.print.attribute.standard.MediaName;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
@@ -25,15 +24,18 @@ public class ExecuteCommand {
 
 	private final String __name__ = "@ExecuteCommand ";
 
+	private final static long TIME_OUT_MINUS = 60;
+	private final static long TIME_OUT = 1000 * 60 * TIME_OUT_MINUS; // 1 hour
+
+	private static Process process = null;
+	
 	public static void deletePathFile() {
-//		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_TMP_INSTR_OUTPUT_FILE};
-//		return execute(cmd);
 		File file = new File(Constant.STR_TMP_INSTR_OUTPUT_FILE);
-		if(file.exists()){
+		if (file.exists()) {
 			file.delete();
 		}
 	}
-	
+
 	public static String moveFile(String source, String target) {
 		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_MV + source + " " + target };
 		return execute(cmd);
@@ -64,11 +66,12 @@ public class ExecuteCommand {
 		String[] cmd = new String[] { "/bin/bash", "-c", Constant.COMMAND_RM + Constant.STR_MUTATION_POINT_PATH };
 		return execute(cmd);
 	}
-
+	
 	public static String execute(String... command) {
-		Process process = null;
+//		Process process = null;
 		String result = null;
 		try {
+			setTimeOut();
 			process = Runtime.getRuntime().exec(command);
 			ByteArrayOutputStream resultOutStream = new ByteArrayOutputStream();
 			InputStream errorInStream = new BufferedInputStream(process.getErrorStream());
@@ -91,10 +94,10 @@ public class ExecuteCommand {
 			try {
 				process.waitFor();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Debugger.debug("Process interrupted ... ");
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Debugger.debug("Process output redirect exception ... ");
 		} finally {
 			if (process != null) {
 				process.destroy();
@@ -119,15 +122,17 @@ public class ExecuteCommand {
 
 	public static void main(String[] args) {
 		DynamicRuntimeInfo _dynamicRuntimeInfo = new DynamicRuntimeInfo("chart", 1);
-		List<String> cmds = Arrays.asList(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo,
-				"org.jfree.chart.renderer.category.junit.AbstractCategoryItemRendererTests", "test2947660"));
-		newExecutedDefects4JTest(cmds);
+		String[] cmds = InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo,
+				"org.jfree.chart.renderer.category.junit.AbstractCategoryItemRendererTests", "test2947660");
+//		newExecutedDefects4JTest(cmds);
+		executeDefects4JTest(cmds, Constant.STR_TMP_D4J_OUTPUT_FILE);
 	}
 
 	public static void executeDefects4JTest(String[] command, String outputFilePath) {
-		Process process = null;
+//		Process process = null;
 		try {
 			deletePathFile();
+			setTimeOut();
 			process = Runtime.getRuntime().exec(command);
 			File file = new File(outputFilePath);
 			if (!file.exists()) {
@@ -153,18 +158,43 @@ public class ExecuteCommand {
 			processInStream = null;
 			resultOutStream.close();
 			resultOutStream = null;
+			
 			try {
 				process.waitFor();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Debugger.debug("Process interrupted ... ");
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Debugger.debug("Procss output redirect exception ... ");
 		} finally {
 			if (process != null) {
 				process.destroy();
 			}
 			process = null;
 		}
+	}
+	
+	private static void setTimeOut(){
+		Timer timer = new Timer();
+		timer.schedule(new KillProcessTask(timer), TIME_OUT);
+	}
+
+	private static class KillProcessTask extends TimerTask {
+
+		private Timer _timer;
+		public KillProcessTask(Timer timer) {
+			_timer = timer;
+		}
+		
+		@Override
+		public void run() {
+			if(process != null){
+				process.destroy();
+			}
+			if(_timer != null){
+				_timer.cancel();
+			}
+		}
+		
 	}
 }
