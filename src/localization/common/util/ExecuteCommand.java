@@ -145,25 +145,70 @@ public class ExecuteCommand {
 				file.getParentFile().mkdirs();
 				file.createNewFile();
 			}
-			FileOutputStream resultOutStream = new FileOutputStream(file);
-			InputStream errorInStream = new BufferedInputStream(_process.getErrorStream());
-			InputStream processInStream = new BufferedInputStream(_process.getInputStream());
-			int num = 0;
-			byte[] bs = new byte[1024];
-			while ((num = errorInStream.read(bs)) != -1) {
-				resultOutStream.write(bs, 0, num);
-				resultOutStream.flush();
-			}
-			while ((num = processInStream.read(bs)) != -1) {
-				resultOutStream.write(bs, 0, num);
-				resultOutStream.flush();
-			}
-			errorInStream.close();
-			errorInStream = null;
-			processInStream.close();
-			processInStream = null;
-			resultOutStream.close();
-			resultOutStream = null;
+			
+			final FileOutputStream resultOutStream = new FileOutputStream(file);
+			
+			new Thread() {  
+			    public void run() {  
+			    	InputStream errorInStream = new BufferedInputStream(_process.getErrorStream());
+					int num = 0;
+					byte[] bs = new byte[1024];
+					try {
+						while ((num = errorInStream.read(bs)) != -1) {
+							resultOutStream.write(bs, 0, num);
+							resultOutStream.flush();
+						}
+					} catch (IOException e) {
+						Debugger.debug("Procss output redirect exception ... ");
+					} finally {
+						try {
+							errorInStream.close();
+						} catch (IOException e) {
+						}
+					}
+			    }
+			}.start();  
+			
+			new Thread() {  
+			    public void run() {  
+			    	InputStream processInStream = new BufferedInputStream(_process.getInputStream());
+					int num = 0;
+					byte[] bs = new byte[1024];
+					try {
+						while ((num = processInStream.read(bs)) != -1) {
+							resultOutStream.write(bs, 0, num);
+							resultOutStream.flush();
+						}
+					} catch (IOException e) {
+						Debugger.debug("Procss output redirect exception ... ");
+					} finally {
+						try {
+							processInStream.close();
+						} catch (IOException e) {
+						}
+					}
+			    }
+			}.start();  
+			
+//			FileOutputStream resultOutStream = new FileOutputStream(file);
+//			InputStream errorInStream = new BufferedInputStream(_process.getErrorStream());
+//			InputStream processInStream = new BufferedInputStream(_process.getInputStream());
+//			int num = 0;
+//			byte[] bs = new byte[1024];
+//			while ((num = errorInStream.read(bs)) != -1) {
+//				resultOutStream.write(bs, 0, num);
+//				resultOutStream.flush();
+//			}
+//			while ((num = processInStream.read(bs)) != -1) {
+//				resultOutStream.write(bs, 0, num);
+//				resultOutStream.flush();
+//			}
+//			errorInStream.close();
+//			errorInStream = null;
+//			processInStream.close();
+//			processInStream = null;
+//			resultOutStream.close();
+//			resultOutStream = null;
 			
 			try {
 				_process.waitFor();
@@ -171,6 +216,12 @@ public class ExecuteCommand {
 				Debugger.debug("Process interrupted ... ");
 			}
 		} catch (IOException e) {
+			try {
+				_process.getErrorStream().close();
+				_process.getInputStream().close();
+				_process.getOutputStream().close();
+			} catch (IOException e1) {
+			}
 			Debugger.debug("Procss output redirect exception ... ");
 		} finally {
 			if (_process != null) {
