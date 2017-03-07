@@ -282,7 +282,7 @@ public class Dumper {
 		int i = 0;
 		for (; i < files.size(); i++) {
 			try {
-				loadpath[i] = files.get(i).toURI().toURL();
+				loadpath[i] = ((File)files.get(i)).toURI().toURL();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}
