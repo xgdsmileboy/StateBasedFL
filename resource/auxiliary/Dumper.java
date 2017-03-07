@@ -274,7 +274,7 @@ public class Dumper {
 		String[] libs = { "commons-beanutils-1.8.0.jar", "commons-collections-3.2.1.jar", "commons-lang-2.5.jar",
 				"commons-logging-1.1.1.jar", "ezmorph-1.0.6.jar", "json-lib-2.4-jdk15.jar" };
 
-		List<File> files = new ArrayList<File>();
+		List files = new ArrayList();
 		for (String lib : libs) {
 			files.add(new File(LIB_FILE_PATH + "/" + lib));
 		}
