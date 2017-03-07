@@ -275,8 +275,8 @@ public class Dumper {
 				"commons-logging-1.1.1.jar", "ezmorph-1.0.6.jar", "json-lib-2.4-jdk15.jar" };
 
 		List files = new ArrayList();
-		for (String lib : libs) {
-			files.add(new File(LIB_FILE_PATH + "/" + lib));
+		for (int i = 0; i < libs.length; i++) {
+			files.add(new File(LIB_FILE_PATH + "/" + libs[i]));
 		}
 		URL[] loadpath = new URL[files.size()];
 		int i = 0;
