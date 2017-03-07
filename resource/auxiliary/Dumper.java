@@ -165,9 +165,9 @@ public class Dumper {
 			
 			try {
 				Class javaClass = Class.forName("net.sf.json.JSONArray", true, classLoader);
-				Method method = javaClass.getMethod("fromObject", Object.class);
+				Method method = javaClass.getMethod("fromObject", new Class[]{Object.class});
 				method.setAccessible(true);
-				returnObject = method.invoke(null, elemets);
+				returnObject = method.invoke(null, new Object[]{elemets});
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -182,7 +182,7 @@ public class Dumper {
 			try {
 				Class javaClass = Class.forName("net.sf.json.JSONObject", true, classLoader);
 				jsonObject = javaClass.newInstance();
-				method = javaClass.getMethod("accumulate", String.class, Object.class);
+				method = javaClass.getMethod("accumulate", new Class[]{String.class, Object.class});
 				method.setAccessible(true);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -209,7 +209,7 @@ public class Dumper {
 					try {
 						Object value = field.get(o);
 //						jsonObject.accumulate(fName, dumpValue(value, ctx));
-						method.invoke(jsonObject, fName, dumpValue(value, ctx));
+						method.invoke(jsonObject, new Object[]{fName, dumpValue(value, ctx)});
 						// buffer.append(dumpValue(value, ctx, tabs));
 					} catch (Exception e) {
 					}
