@@ -233,7 +233,8 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 				}
 			}
 			ASTNode lastStatement = blockStatement.get(blockStatement.size() - 1);
-			if(node.getReturnType2().toString().equals("void") && !(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
+			
+			if((node.getReturnType2() == null) || (node.getReturnType2().toString().equals("void") && !(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement))){
 				for(Statement insert : tmpNodeList){
 					blockStatement.add(ASTNode.copySubtree(ast, insert));
 				}
