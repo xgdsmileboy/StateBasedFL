@@ -113,6 +113,7 @@ public class Collector {
 //						message += newLine;
 						if(message.length() > 0){
 							message += newLine;
+							message += newLine;
 							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
 							JavaFile.writeStringToFile(filePath, message, true);
@@ -145,10 +146,12 @@ public class Collector {
 					StringBuffer sBuffer = allStates.get(integer);
 //					sBuffer.append(info[2] + ":" + value + "\t");
 					sBuffer.append(value);
+					sBuffer.append(newLine);
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 //					sBuffer.append(info[2] + ":" + value + "\t");
 					sBuffer.append(value);
+					sBuffer.append(newLine);
 					allStates.put(integer, sBuffer);
 				}
 			}
@@ -206,6 +209,7 @@ public class Collector {
 						String message = allStates.get(id).toString().trim();
 //						message += newLine;
 						if(message.length() > 0){
+							message += newLine;
 							message += newLine;
 							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
@@ -266,12 +270,14 @@ public class Collector {
 					StringBuffer sBuffer = allStates.get(integer);
 //					sBuffer.append(info[2] + ":" + value+ "\t");
 					sBuffer.append(value);
+					sBuffer.append(newLine);
 //					lastStringBuffer = sBuffer;
 //					lastMethodID = integer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 //					sBuffer.append(info[2] + ":" + value + "\t");
 					sBuffer.append(value);
+					sBuffer.append(newLine);
 					allStates.put(integer, sBuffer);
 //					lastStringBuffer = sBuffer;
 //					lastMethodID = integer;
@@ -676,6 +682,7 @@ public class Collector {
 //						message += newLine;
 						if(message.length() > 0){
 							message += newLine;
+							message += newLine;
 							String methodString = Identifier.getMessage(id);
 							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
 							JavaFile.writeStringToFile(filePath, message, true);
@@ -708,11 +715,13 @@ public class Collector {
 					StringBuffer sBuffer = allStates.get(integer);
 //					sBuffer.append(info[2] + ":" + value+ "\t");
 					sBuffer.append(value);
+					sBuffer.append(newLine);
 //					lastStringBuffer = sBuffer;
 				} else {
 					StringBuffer sBuffer = new StringBuffer();
 //					sBuffer.append(info[2] + ":" + value + "\t");
 					sBuffer.append(value);
+					sBuffer.append(newLine);
 					allStates.put(integer, sBuffer);
 //					lastStringBuffer = sBuffer;
 				}
