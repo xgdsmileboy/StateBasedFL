@@ -232,9 +232,8 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 					blockStatement.add(ASTNode.copySubtree(ast, astNode));
 				}
 			}
-			//prevent dead code, more detail should be considered such as if(){... return; }else{... return; } may cause dead code
 			ASTNode lastStatement = blockStatement.get(blockStatement.size() - 1);
-			if(!(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
+			if(node.getReturnType2().toString().equals("void") && !(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
 				for(Statement insert : tmpNodeList){
 					blockStatement.add(ASTNode.copySubtree(ast, insert));
 				}
