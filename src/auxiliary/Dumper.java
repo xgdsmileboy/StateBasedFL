@@ -20,7 +20,7 @@ public class Dumper {
 	private static URLClassLoader classLoader = null;
 	
 	private static boolean removeNewLine = true;
-	private final static long MAX_OUTPUT_FILE_SIZE = 100;
+	private final static long MAX_OUTPUT_FILE_SIZE = 1000;
 	private final static int MAX_DEPTH = 3;
 	private final static int ARRAY_MAX_LENGTH = 5;
 	private final static String OUT_AND_LIB_PATH = "/Users/Jiajun/Code/Java/fault-localization/StateBasedFL";
@@ -165,9 +165,9 @@ public class Dumper {
 			
 			try {
 				Class javaClass = Class.forName("net.sf.json.JSONArray", true, classLoader);
-				Method method = javaClass.getMethod("fromObject", Object.class);
+				Method method = javaClass.getMethod("fromObject", new Class[]{Object.class});
 				method.setAccessible(true);
-				returnObject = method.invoke(null, elemets);
+				returnObject = method.invoke(null, new Object[]{elemets});
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -182,7 +182,7 @@ public class Dumper {
 			try {
 				Class javaClass = Class.forName("net.sf.json.JSONObject", true, classLoader);
 				jsonObject = javaClass.newInstance();
-				method = javaClass.getMethod("accumulate", String.class, Object.class);
+				method = javaClass.getMethod("accumulate", new Class[]{String.class, Object.class});
 				method.setAccessible(true);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -209,7 +209,7 @@ public class Dumper {
 					try {
 						Object value = field.get(o);
 //						jsonObject.accumulate(fName, dumpValue(value, ctx));
-						method.invoke(jsonObject, fName, dumpValue(value, ctx));
+						method.invoke(jsonObject, new Object[]{fName, dumpValue(value, ctx)});
 						// buffer.append(dumpValue(value, ctx, tabs));
 					} catch (Exception e) {
 					}
@@ -274,15 +274,15 @@ public class Dumper {
 		String[] libs = { "commons-beanutils-1.8.0.jar", "commons-collections-3.2.1.jar", "commons-lang-2.5.jar",
 				"commons-logging-1.1.1.jar", "ezmorph-1.0.6.jar", "json-lib-2.4-jdk15.jar" };
 
-		List<File> files = new ArrayList<File>();
-		for (String lib : libs) {
-			files.add(new File(LIB_FILE_PATH + "/" + lib));
+		List files = new ArrayList();
+		for (int i = 0; i < libs.length; i++) {
+			files.add(new File(LIB_FILE_PATH + "/" + libs[i]));
 		}
 		URL[] loadpath = new URL[files.size()];
 		int i = 0;
 		for (; i < files.size(); i++) {
 			try {
-				loadpath[i] = files.get(i).toURI().toURL();
+				loadpath[i] = ((File)files.get(i)).toURI().toURL();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}

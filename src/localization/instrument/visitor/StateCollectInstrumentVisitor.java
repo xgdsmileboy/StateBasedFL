@@ -206,14 +206,14 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 		
 		Statement endGuard = GenStatement.genASTNode(Constant.INSTRUMENT_FLAG + _methodFlag + ">>END" + "#" + String.valueOf(keyValue), 0);
 		
-		//if a constructor, do not instrument 
-		if(node.isConstructor()){
-			blockStatement.add((ASTNode) ASTNode.copySubtree(ast, endGuard));
-			for (; i < methodBody.statements().size(); i++) {
-				ASTNode astNode = (ASTNode) methodBody.statements().get(i);
-				blockStatement.add((ASTNode) ASTNode.copySubtree(AST.newAST(AST.JLS8), astNode));
-			}
-		} else {
+//		//if a constructor, do not instrument 
+//		if(node.isConstructor()){
+//			blockStatement.add((ASTNode) ASTNode.copySubtree(ast, endGuard));
+//			for (; i < methodBody.statements().size(); i++) {
+//				ASTNode astNode = (ASTNode) methodBody.statements().get(i);
+//				blockStatement.add((ASTNode) ASTNode.copySubtree(AST.newAST(AST.JLS8), astNode));
+//			}
+//		} else {
 			List<Statement> tmpNodeList = new ArrayList<>();
 			if(!Modifier.isStatic(node.getModifiers())){
 				tmpNodeList.add(GenStatement.genThisFieldDumpMethodInvocation(message));
@@ -232,13 +232,14 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 					blockStatement.add(ASTNode.copySubtree(ast, astNode));
 				}
 			}
+			//prevent dead code, more detail should be considered such as if(){... return; }else{... return; } may cause dead code
 			ASTNode lastStatement = blockStatement.get(blockStatement.size() - 1);
-			if(node.getReturnType2().toString().equals("void") && !(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
+			if(!(lastStatement instanceof ReturnStatement || lastStatement instanceof ThrowStatement)){
 				for(Statement insert : tmpNodeList){
 					blockStatement.add(ASTNode.copySubtree(ast, insert));
 				}
 			}
-		}
+//		}
 		
 		methodBody.statements().clear();
 		for (ASTNode statement : blockStatement) {
