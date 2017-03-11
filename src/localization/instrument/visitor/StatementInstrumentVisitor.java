@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.BreakStatement;
 import org.eclipse.jdt.core.dom.CatchClause;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.ContinueStatement;
@@ -33,6 +35,7 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 
 import localization.common.config.Constant;
 import localization.common.config.Identifier;
+import localization.common.java.JavaFile;
 import localization.common.java.Method;
 import localization.common.util.Debugger;
 import localization.instrument.gen.GenStatement;
@@ -139,6 +142,15 @@ public class StatementInstrumentVisitor extends TraversalVisitor {
 				|| name.equals("tearDown") || name.equals("toString") || name.equals("getName")
 				|| name.equals("setName"))){
 			return true;
+		}
+		
+		// filter those methods that defined in anonymous classes
+		ASTNode parent = node.getParent();
+		while (parent != null && !(parent instanceof TypeDeclaration)) {
+			if (parent instanceof ClassInstanceCreation) {
+				return true;
+			}
+			parent = parent.getParent();
 		}
 
 //		StringBuffer buffer = new StringBuffer(Constant.INSTRUMENT_KEY_TYPE + _clazzName);
@@ -448,6 +460,15 @@ public class StatementInstrumentVisitor extends TraversalVisitor {
 			}
 		}
 		return newBlock;
+	}
+	
+	public static void main(String[] args) {
+		String filePath = "/Users/Jiajun/Code/Java/defects4j/math_1_buggy/src/test/java/org/apache/commons/math3/analysis/integration/IterativeLegendreGaussIntegratorTest.java";
+		CompilationUnit compilationUnit = JavaFile.genASTFromSource(JavaFile.readFileToString(filePath),
+				ASTParser.K_COMPILATION_UNIT);
+		compilationUnit.accept(new StatementInstrumentVisitor());
+		System.out.println(compilationUnit.toString());
+		JavaFile.writeStringToFile(filePath, compilationUnit.toString());
 	}
 
 }
