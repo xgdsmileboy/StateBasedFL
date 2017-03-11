@@ -144,6 +144,15 @@ public class StatementInstrumentVisitor extends TraversalVisitor {
 			return true;
 		}
 		
+		// filter those functional methods in test class path, test method name
+		// starting with "test" in Junit 3 while with annotation as "@Test" in
+		// Junit 4, 
+		//TODO should be optimized since the "contain" method is time consuming
+		if (_methodFlag.equals(Constant.INSTRUMENT_TEST)
+				&& !name.startsWith("test") && !node.toString().contains("@Test")) {
+			return true;
+		}
+		
 		// filter those methods that defined in anonymous classes
 		ASTNode parent = node.getParent();
 		while (parent != null && !(parent instanceof TypeDeclaration)) {

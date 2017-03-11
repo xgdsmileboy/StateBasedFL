@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -131,6 +132,15 @@ public class MethodInstrumentVisitor extends TraversalVisitor {
 			return true;
 		}
 
+		// filter those functional methods in test class path, test method name
+		// starting with "test" in Junit 3 while with annotation as "@Test" in
+		// Junit 4, 
+		//TODO should be optimized since the "contain" method is time consuming
+		if (_methodFlag.equals(Constant.INSTRUMENT_TEST)
+				&& !name.startsWith("test") && !node.toString().contains("@Test")) {
+			return true;
+		}
+
 		// filter those methods that defined in anonymous classes
 		ASTNode parent = node.getParent();
 		while (parent != null && !(parent instanceof TypeDeclaration)) {
@@ -217,8 +227,8 @@ public class MethodInstrumentVisitor extends TraversalVisitor {
 		CompilationUnit compilationUnit = JavaFile.genASTFromSource(JavaFile.readFileToString(filePath),
 				ASTParser.K_COMPILATION_UNIT);
 		compilationUnit.accept(new MethodInstrumentVisitor());
-		System.out.println(compilationUnit.toString());
-		JavaFile.writeStringToFile(filePath, compilationUnit.toString());
+		// System.out.println(compilationUnit.toString());
+		// JavaFile.writeStringToFile(filePath, compilationUnit.toString());
 	}
 
 }
