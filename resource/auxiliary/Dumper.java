@@ -188,7 +188,7 @@ public class Dumper {
 				e.printStackTrace();
 			}
 			
-			while (oClass != null && oClass != Object.class) {
+			while (oClass != null) {
 
 				Field[] allFields = oClass.getDeclaredFields();
 
