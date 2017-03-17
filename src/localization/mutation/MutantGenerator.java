@@ -91,7 +91,7 @@ public class MutantGenerator {
 					LevelLogger.error("generateMMLFile parse method info error : " + methodString);
 					continue;
 				}
-				String temp = methodInfo[0] + "@" + methodInfo[2];
+				String temp = methodInfo[0] + "::" + methodInfo[2];
 				if (!dup.contains(temp)) {
 					writer.write("groupOP<\"" + temp + "\">;\n");
 					dup.add(temp);
