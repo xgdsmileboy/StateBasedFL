@@ -18,7 +18,7 @@ import java.util.List;
 public class Dumper {
 
 	private static URLClassLoader classLoader = null;
-	
+
 	private static boolean removeNewLine = true;
 	private final static long MAX_OUTPUT_FILE_SIZE = 1000;
 	private final static int MAX_DEPTH = 3;
@@ -54,11 +54,11 @@ public class Dumper {
 				return false;
 			}
 		}
-		
-		if((file.length() >> 20) > MAX_OUTPUT_FILE_SIZE){
+
+		if ((file.length() >> 20) > MAX_OUTPUT_FILE_SIZE) {
 			return true;
 		}
-		
+
 		BufferedWriter bufferedWriter = null;
 		try {
 			bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8"));
@@ -121,7 +121,7 @@ public class Dumper {
 		ctx.maxDepth = maxDepth;
 		ctx.maxArrayElements = maxArrayElements;
 
-		String allFields = dump(o, ctx);
+		String allFields = dump(o, ctx).toString();
 		// if(removeNewLine){
 		// allFields = allFields.replace("\n", "");
 		// }
@@ -129,9 +129,9 @@ public class Dumper {
 		return allFields;
 	}
 
-	protected static String dump(Object o, DumpContext ctx) {
+	protected static Object dump(Object o, DumpContext ctx) {
 		if (o == null) {
-			if(ctx.callCount == 0){
+			if (ctx.callCount == 0) {
 				return "{null}";
 			} else {
 				return null;
@@ -148,8 +148,8 @@ public class Dumper {
 
 		if (oClass.isArray()) {
 			// buffer.append("[\n");
-			int rowCount = ctx.maxArrayElements == 0 ? Array.getLength(o)
-					: Math.min(ctx.maxArrayElements, Array.getLength(o));
+			Integer realCount = Array.getLength(o);
+			int rowCount = ctx.maxArrayElements == 0 ? realCount : Math.min(ctx.maxArrayElements, Array.getLength(o));
 			List elemets = new ArrayList();
 			for (int i = 0; i < rowCount; i++) {
 				try {
@@ -162,33 +162,42 @@ public class Dumper {
 				// buffer.append("\n");
 			}
 			// buffer.append("]");
-			
+
 			try {
 				Class javaClass = Class.forName("net.sf.json.JSONArray", true, classLoader);
-				Method method = javaClass.getMethod("fromObject", new Class[]{Object.class});
+				Method method = javaClass.getMethod("fromObject", new Class[] { Object.class });
 				method.setAccessible(true);
-				returnObject = method.invoke(null, new Object[]{elemets});
+				Object tmpObject = method.invoke(null, new Object[]{ elemets });
+				
+				Class wrapperClass = Class.forName("net.sf.json.JSONObject", true, classLoader);
+				returnObject = wrapperClass.newInstance();
+				method = wrapperClass.getMethod("accumulate", new Class[] { String.class, Object.class });
+				method.setAccessible(true);
+				
+				method.invoke(returnObject, new Object[]{"length", realCount});
+				method.invoke(returnObject, new Object[]{"elements", tmpObject});
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-//			JSONArray jsonArray = JSONArray.fromObject(elemets);
-//			returnObject = jsonArray;
+
+			// JSONArray jsonArray = JSONArray.fromObject(elemets);
+			// returnObject = jsonArray;
 		} else {
 			// buffer.append("{\n");
-//			JSONObject jsonObject = new JSONObject();
+			// JSONObject jsonObject = new JSONObject();
 			Object jsonObject = null;
 			Method method = null;
 			try {
 				Class javaClass = Class.forName("net.sf.json.JSONObject", true, classLoader);
 				jsonObject = javaClass.newInstance();
-				method = javaClass.getMethod("accumulate", new Class[]{String.class, Object.class});
+				method = javaClass.getMethod("accumulate", new Class[] { String.class, Object.class });
 				method.setAccessible(true);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			while (oClass != null && oClass != Object.class) {
+
+			while (oClass != null) {
 
 				Field[] allFields = oClass.getDeclaredFields();
 
@@ -208,8 +217,8 @@ public class Dumper {
 					field.setAccessible(true);
 					try {
 						Object value = field.get(o);
-//						jsonObject.accumulate(fName, dumpValue(value, ctx));
-						method.invoke(jsonObject, new Object[]{fName, dumpValue(value, ctx)});
+						// jsonObject.accumulate(fName, dumpValue(value, ctx));
+						method.invoke(jsonObject, new Object[] { fName, dumpValue(value, ctx) });
 						// buffer.append(dumpValue(value, ctx, tabs));
 					} catch (Exception e) {
 					}
@@ -223,7 +232,7 @@ public class Dumper {
 		}
 		ctx.callCount--;
 		// return buffer.toString();
-		return returnObject.toString();
+		return returnObject;
 
 	}
 
@@ -282,7 +291,7 @@ public class Dumper {
 		int i = 0;
 		for (; i < files.size(); i++) {
 			try {
-				loadpath[i] = ((File)files.get(i)).toURI().toURL();
+				loadpath[i] = ((File) files.get(i)).toURI().toURL();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}
