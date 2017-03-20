@@ -148,7 +148,7 @@ public class Dumper {
 
 		if (oClass.isArray()) {
 			// buffer.append("[\n");
-			Integer realCount = Array.getLength(o);
+			int realCount = Array.getLength(o);
 			int rowCount = ctx.maxArrayElements == 0 ? realCount : Math.min(ctx.maxArrayElements, Array.getLength(o));
 			List elemets = new ArrayList();
 			for (int i = 0; i < rowCount; i++) {
@@ -174,7 +174,7 @@ public class Dumper {
 				method = wrapperClass.getMethod("accumulate", new Class[] { String.class, Object.class });
 				method.setAccessible(true);
 				
-				method.invoke(returnObject, new Object[]{"length", realCount});
+				method.invoke(returnObject, new Object[]{"length", Integer.valueOf(realCount)});
 				method.invoke(returnObject, new Object[]{"elements", tmpObject});
 				
 			} catch (Exception e) {
