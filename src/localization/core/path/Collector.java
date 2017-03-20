@@ -661,9 +661,9 @@ public class Collector {
 //						lastStringBuffer.append(newLine);
 //						isNewLine = false;
 //					}
-					if(canCollectData){
+//					if(canCollectData){
 						START_count ++;
-					}
+//					}
 					continue;
 				}
 //				isNewLine = true;
@@ -678,19 +678,22 @@ public class Collector {
 					}
 					int id = Integer.parseInt(guardStrings[1]);
 					if(allStates.containsKey(id)){
-						String message = allStates.get(id).toString().trim();
-//						message += newLine;
-						if(message.length() > 0){
-							message += newLine;
-							message += newLine;
-							String methodString = Identifier.getMessage(id);
-							String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-							JavaFile.writeStringToFile(filePath, message, true);
-//							message = "";
+						if(canCollectData){
+							String message = allStates.get(id).toString().trim();
+	//						message += newLine;
+							if(message.length() > 0){
+								message += newLine;
+								message += newLine;
+								String methodString = Identifier.getMessage(id);
+								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+								JavaFile.writeStringToFile(filePath, message, true);
+	//							message = "";
+							}
 						}
-						StringBuffer stringBuffer = new StringBuffer();
-//						stringBuffer.append(message);
-						allStates.put(id, stringBuffer);
+						allStates.remove(id);
+//						StringBuffer stringBuffer = new StringBuffer();
+////						stringBuffer.append(message);
+//						allStates.put(id, stringBuffer);
 					}
 					continue;
 				}
@@ -738,17 +741,17 @@ public class Collector {
 				}
 			}
 		}
-		
-		for(Entry<Integer, StringBuffer> entry : allStates.entrySet()){
-			StringBuffer sBuffer = entry.getValue();
-			if(sBuffer == null || sBuffer.toString().trim().length() <= 0){
-				continue;
-			}
-			String methodString = Identifier.getMessage(entry.getKey());
-			String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
-			String message = sBuffer.toString().trim() + System.getProperty("line.separator");
-			JavaFile.writeStringToFile(filePath, message, true);
-		}
+		//if a method did not finish running, just drop the data
+//		for(Entry<Integer, StringBuffer> entry : allStates.entrySet()){
+//			StringBuffer sBuffer = entry.getValue();
+//			if(sBuffer == null || sBuffer.toString().trim().length() <= 0){
+//				continue;
+//			}
+//			String methodString = Identifier.getMessage(entry.getKey());
+//			String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
+//			String message = sBuffer.toString().trim() + System.getProperty("line.separator");
+//			JavaFile.writeStringToFile(filePath, message, true);
+//		}
 	}
 	
 	public void collect(){
