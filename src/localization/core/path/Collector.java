@@ -498,6 +498,10 @@ public class Collector {
 				continue;
 			}
 			String mutantFullClazz = methodInfo[0];
+			int indexForDollar = mutantFullClazz.indexOf("$");
+			if(indexForDollar > 0){
+				mutantFullClazz = mutantFullClazz.substring(0, indexForDollar);
+			}
 			String originalFile = _sourceSRCPath + Constant.PATH_SEPARATOR + mutantFullClazz.replace(".", Constant.PATH_SEPARATOR) + ".java";
 			//backup original file
 			ExecuteCommand.moveFile(originalFile, originalFile+"bak");
