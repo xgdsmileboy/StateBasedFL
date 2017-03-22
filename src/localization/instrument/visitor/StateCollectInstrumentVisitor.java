@@ -39,6 +39,7 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 
 import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
+import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators.TypedAncestorIterator;
 
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
@@ -114,15 +115,28 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 
 	@Override
 	public boolean visit(TypeDeclaration node) {
-		if (!Modifier.isPublic(node.getModifiers())) {
-			_clazzName = _clazzFileName + "$" + node.getName().getFullyQualifiedName();
-		}
+//		if (!Modifier.isPublic(node.getModifiers())) {
+//			_clazzName = _clazzFileName + "$" + node.getName().getFullyQualifiedName();
+//		}
 		return true;
 	}
 
 	@Override
 	public boolean visit(MethodDeclaration node) {
 
+		_clazzName = _clazzFileName;
+		ASTNode parent = node.getParent();
+		while(parent != null){
+			if(parent instanceof TypeDeclaration){
+				TypeDeclaration tmp = (TypeDeclaration) parent;
+				if(!Modifier.isPublic(tmp.getModifiers())){
+					_clazzName = _clazzFileName + "$" + tmp.getName().getFullyQualifiedName();
+					break;
+				}
+			}
+			parent = parent.getParent();
+		}
+		
 		if (_method != null && !_method.match(node, _clazzName)) {
 			return true;
 		}

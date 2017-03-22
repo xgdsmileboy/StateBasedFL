@@ -70,10 +70,10 @@ public class Method {
 		if (match(methodDeclaration)) {
 			String methodString = Identifier.getMessage(_methodID);
 			if (methodString != null && packageAndClazzName != null) {
-				int index = packageAndClazzName.indexOf("$");
-				if(index > 0){
-					packageAndClazzName = packageAndClazzName.substring(0, index);
-				}
+//				int index = packageAndClazzName.indexOf("$");
+//				if(index > 0){
+//					packageAndClazzName = packageAndClazzName.substring(0, index);
+//				}
 				if (methodString.contains(packageAndClazzName)) {
 					return true;
 				}
