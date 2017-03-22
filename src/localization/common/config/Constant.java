@@ -17,6 +17,12 @@ public class Constant {
 	// least length for failed test trace
 	public final static int TRACE_LENGTH_FOR_FAILED_TEST = 20;
 
+	// dumper configuration
+	public static String DUMPER_MAX_OUTPUT_FILE_SIZE = null;
+	public static String DUMPER_MAX_DEPTH = null;
+	public static String DUMPER_ARRAY_MAX_LENGTH = null;
+	public static String DUMPER_OUT_AND_LIB_PATH = null;
+	
 	// build flags
 	public final static String ANT_BUILD_FAILED = "BUILD FAILED";
 	public final static String ANT_BUILD_SUCCESS = "BUILD SUCCESSFUL";
