@@ -7,7 +7,7 @@
 *.log
 .settings/
 bin/
-out/
+out*
 all/
 logs/
 resource/project/

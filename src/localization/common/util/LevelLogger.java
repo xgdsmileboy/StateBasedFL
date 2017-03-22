@@ -12,9 +12,9 @@ public class LevelLogger {
 	private static LevelLogger levelLogger_ = new LevelLogger();
 	
 	private LevelLogger(){
-		File f = new File("log4j.properties");
+		File f = new File("resource/conf/log4j.properties");
 		if (f.exists()) {
-			PropertyConfigurator.configure("log4j.properties");
+			PropertyConfigurator.configure("resource/conf/log4j.properties");
 		} else {
 			BasicConfigurator.configure();
 		}
