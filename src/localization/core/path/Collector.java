@@ -32,6 +32,7 @@ import localization.common.util.Debugger;
 import localization.common.util.ExecuteCommand;
 import localization.common.util.LevelLogger;
 import localization.common.util.Pair;
+import localization.core.path.filter.Cluster;
 import localization.instrument.Instrument;
 import localization.instrument.visitor.DeInstrumentVisitor;
 import localization.instrument.visitor.MethodInstrumentVisitor;
@@ -462,6 +463,13 @@ public class Collector {
 		List<Pair<String, Set<Integer>>> allPassedTestWithMethod = collectAllMutateFile(collectStateMethods);
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
+		
+		LevelLogger.info("Test Methods before apply K_means : " + allPassedTestWithMethod.size());
+		
+		// select partial test methods via K_Means, given the max size for one cluster and select top N test methods from each.
+		allPassedTestWithMethod = Cluster.K_Means(allPassedTestWithMethod, new ArrayList<>(collectMethods), Constant.CLUSTER_MAX_SIZE_FOR_ONE, Constant.CLUSTER_KEEP_TOP_N);
+		
+		LevelLogger.info("Test Methods after apply K_means : " + allPassedTestWithMethod.size());
 		
 		Set<Integer> allMethodsID = new HashSet<>();
 		List<Pair<String, Set<String>>> allPassedTestWithClazzPath = new ArrayList<>();

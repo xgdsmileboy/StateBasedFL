@@ -132,6 +132,10 @@ public class Configuration {
 			Constant.DUMPER_MAX_OUTPUT_FILE_SIZE = prop.getProperty("dumper.MAX_OUTPUT_FILE_SIZE");
 			Constant.DUMPER_MAX_DEPTH = prop.getProperty("dumper.MAX_DEPTH");
 			Constant.DUMPER_ARRAY_MAX_LENGTH = prop.getProperty("dumper.ARRAY_MAX_LENGTH");
+			
+			// for cluster
+			Constant.CLUSTER_MAX_SIZE_FOR_ONE = Integer.parseInt(prop.getProperty("cluster.CLUSTER_MAX_SIZE_FOR_ONE"));
+			Constant.CLUSTER_KEEP_TOP_N = Integer.parseInt(prop.getProperty("cluster.CLUSTER_KEEP_TOP_N"));
 
 		} catch (IOException e) {
 			if (Debugger.debugOn()) {

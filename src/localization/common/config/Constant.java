@@ -23,6 +23,10 @@ public class Constant {
 	public static String DUMPER_ARRAY_MAX_LENGTH = null;
 	public static String DUMPER_OUT_AND_LIB_PATH = null;
 	
+	// cluster configuration
+	public static int CLUSTER_MAX_SIZE_FOR_ONE = 20;
+	public static int CLUSTER_KEEP_TOP_N = 10;
+	
 	// build flags
 	public final static String ANT_BUILD_FAILED = "BUILD FAILED";
 	public final static String ANT_BUILD_SUCCESS = "BUILD SUCCESSFUL";
