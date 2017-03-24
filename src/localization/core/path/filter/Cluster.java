@@ -19,8 +19,21 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
 
+/**
+ * This class contains some cluster algorithms
+ * @author Jiajun
+ * @date Mar 24, 2017
+ */
 public class Cluster {
-
+	
+	/**
+	 * This method is used for filter passed test cases that used for collecting negative states
+	 * @param allPassedMethodWithExecutedMethods
+	 * @param collectDataMethods : all methods that will be collecting states
+	 * @param maxClusterSize : max size for each cluster
+	 * @param keepTopN : keep top N test methods in each cluster
+	 * @return
+	 */
 	public static List<Pair<String, Set<Integer>>> K_Means(
 			List<Pair<String, Set<Integer>>> allPassedMethodWithExecutedMethods, List<Method> collectDataMethods,
 			int maxClusterSize, int keepTopN) {
@@ -114,6 +127,13 @@ public class Cluster {
 		return result;
 	}
 
+	/**
+	 * call k-means cluster in weka
+	 * @param dataset
+	 * @param clusterNumber
+	 * @return
+	 * @throws Exception
+	 */
 	private static int[] computeKMeans(Instances dataset, int clusterNumber) throws Exception {
 		SimpleKMeans kmeans = new SimpleKMeans();
 		kmeans.setSeed(10);

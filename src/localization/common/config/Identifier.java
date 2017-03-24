@@ -3,6 +3,11 @@ package localization.common.config;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used for label each method with a unique id
+ * @author Jiajun
+ * @date Mar 24, 2017
+ */
 public class Identifier {
 	private static Map<Integer, String> identifiers = new HashMap<>();
 	private static Map<String, Integer> inverseIdentifier = new HashMap<>();

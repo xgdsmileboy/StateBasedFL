@@ -234,22 +234,4 @@ public class ExecuteCommand {
 			_timer = null;
 		}
 	}
-	
-	private static void setTimeOut(){
-		_timer = new Timer();
-		_timer.schedule(new KillProcessTask(), TIME_OUT_MILIS);
-	}
-
-	private static class KillProcessTask extends TimerTask {
-		@Override
-		public void run() {
-			if(_process != null){
-				_process.destroy();
-			}
-			if(_timer != null){
-				_timer.cancel();
-			}
-		}
-		
-	}
 }

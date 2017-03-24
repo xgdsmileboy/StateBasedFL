@@ -23,6 +23,11 @@ public class Method {
 		return _methodID;
 	}
 	
+	/**
+	 * match a method with a MethodDeclaration
+	 * @param methodDeclaration
+	 * @return
+	 */
 	public boolean match(MethodDeclaration methodDeclaration) {
 		String methodString = Identifier.getMessage(_methodID);
 		String[] concreteInfo = methodString.split("#");

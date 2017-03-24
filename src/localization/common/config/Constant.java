@@ -1,5 +1,10 @@
 package localization.common.config;
 
+/**
+ * This class contains all constant variables
+ * @author Jiajun
+ * @date Mar 24, 2017
+ */
 public class Constant {
 
 	// used for instrument
@@ -22,11 +27,11 @@ public class Constant {
 	public static String DUMPER_MAX_DEPTH = null;
 	public static String DUMPER_ARRAY_MAX_LENGTH = null;
 	public static String DUMPER_OUT_AND_LIB_PATH = null;
-	
+
 	// cluster configuration
 	public static int CLUSTER_MAX_SIZE_FOR_ONE = 20;
 	public static int CLUSTER_KEEP_TOP_N = 10;
-	
+
 	// build flags
 	public final static String ANT_BUILD_FAILED = "BUILD FAILED";
 	public final static String ANT_BUILD_SUCCESS = "BUILD SUCCESSFUL";
@@ -53,7 +58,7 @@ public class Constant {
 	public final static String STR_POSITIVE_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/positive";
 	public final static String STR_FAILED_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/failed";
 
-	//********************configuration for mutant generation*******************//
+	// *********configuration for mutant generation********//
 	public final static String STR_MUTATION_POINT_PATH = STR_OUT_PATH + "/mutation";
 	public static String STR_MML_CONFIG_FILE = "";
 
@@ -71,4 +76,5 @@ public class Constant {
 	public final static String MUTANT_LOG = "/mutants.log";
 	public final static String[] MUTANT_REMOVABLE_FILES = { MUTANT_DIR, "/mutants.log", "/target", "/mml",
 			"/.classes_mutated" };
+
 }

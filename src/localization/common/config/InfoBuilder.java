@@ -239,6 +239,13 @@ public class InfoBuilder {
 		return cmd;
 	}
 
+	/**
+	 * build command to run a single test case
+	 * @param dynamicRuntimeInfo
+	 * @param clazzName : full class path, including package name and class name
+	 * @param methodName : test case name
+	 * @return commands
+	 */
 	public static String[] buildDefects4JTestCommand(DynamicRuntimeInfo dynamicRuntimeInfo, String clazzName,
 			String methodName) {
 		if (clazzName != null && methodName != null) {
@@ -247,6 +254,12 @@ public class InfoBuilder {
 		return new String[] { "/bin/bash", "-c" };
 	}
 
+	/**
+	 * build command to run a single test case
+	 * @param dynamicRuntimeInfo
+	 * @param testInfo
+	 * @return
+	 */
 	public static String[] buildDefects4JTestCommand(DynamicRuntimeInfo dynamicRuntimeInfo, String testInfo) {
 		StringBuffer args = new StringBuffer();
 		if (check(dynamicRuntimeInfo) && testInfo != null) {
@@ -259,7 +272,13 @@ public class InfoBuilder {
 		String[] cmd = new String[] { "/bin/bash", "-c", args.toString() };
 		return cmd;
 	}
-
+	/**
+	 * run a single test with given time limiting
+	 * @param dynamicRuntimeInfo
+	 * @param testInfo : test method info , full test class :: test method
+	 * @param timeoutSeconds : max run time
+	 * @return
+	 */
 	public static String[] buildDefects4JTestCommandWithTimeout(DynamicRuntimeInfo dynamicRuntimeInfo, String testInfo,
 			long timeoutSeconds) {
 		StringBuffer args = new StringBuffer();

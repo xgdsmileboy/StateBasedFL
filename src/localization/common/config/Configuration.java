@@ -24,6 +24,11 @@ import localization.common.java.JavaFile;
 import localization.common.util.Debugger;
 import localization.common.util.LevelLogger;
 
+/**
+ * This class used to initialize configurations
+ * @author Jiajun
+ * @date Mar 24, 2017
+ */
 public class Configuration {
 
 	private final static String __name__ = "@Configuration ";
@@ -32,6 +37,9 @@ public class Configuration {
 		config_dumper(dynamicRuntimeInfo);
 	}
 
+	/**
+	 * read configurations from external configure file
+	 */
 	public static void init() {
 		Map<String, String[]> projectInfo = new HashMap<>();
 
@@ -126,13 +134,13 @@ public class Configuration {
 					+ "/framework/bin/defects4j".replace("/", Constant.PATH_SEPARATOR) + " ";
 			Constant.COMMAND_MML = Constant.DEFECTS4J_HOME + "/major/bin/mmlc".replace("/", Constant.PATH_SEPARATOR)
 					+ " ";
-			
-			//for dumper configure
+
+			// for dumper configure
 			Constant.DUMPER_OUT_AND_LIB_PATH = Constant.HOME;
 			Constant.DUMPER_MAX_OUTPUT_FILE_SIZE = prop.getProperty("dumper.MAX_OUTPUT_FILE_SIZE");
 			Constant.DUMPER_MAX_DEPTH = prop.getProperty("dumper.MAX_DEPTH");
 			Constant.DUMPER_ARRAY_MAX_LENGTH = prop.getProperty("dumper.ARRAY_MAX_LENGTH");
-			
+
 			// for cluster
 			Constant.CLUSTER_MAX_SIZE_FOR_ONE = Integer.parseInt(prop.getProperty("cluster.CLUSTER_MAX_SIZE_FOR_ONE"));
 			Constant.CLUSTER_KEEP_TOP_N = Integer.parseInt(prop.getProperty("cluster.CLUSTER_KEEP_TOP_N"));
@@ -153,6 +161,12 @@ public class Configuration {
 		InfoBuilder.init(projectInfo);
 	}
 
+	/**
+	 * configure output source code and copy it to the corresponding project
+	 * folder
+	 * 
+	 * @param dynamicRuntimeInfo
+	 */
 	private static void config_dumper(DynamicRuntimeInfo dynamicRuntimeInfo) {
 		File file = new File(Constant.HOME + "/resource/auxiliary/Dumper.java");
 		if (!file.exists()) {
@@ -169,11 +183,11 @@ public class Configuration {
 			System.err.println(__name__ + "#execute Format Code Error for : " + file.getAbsolutePath());
 			formatSource = cu.toString();
 		}
-		
+
 		String path = InfoBuilder.buildSourceSRCPath(dynamicRuntimeInfo, true);
 		String target = path + Constant.PATH_SEPARATOR + "auxiliary/Dumper.java";
 		File targetFile = new File(target);
-		if(!targetFile.exists()){
+		if (!targetFile.exists()) {
 			targetFile.getParentFile().mkdirs();
 			try {
 				targetFile.createNewFile();
@@ -181,11 +195,17 @@ public class Configuration {
 				e.printStackTrace();
 			}
 		}
-		
+
 		JavaFile.writeStringToFile(targetFile, formatSource);
 	}
 }
 
+/**
+ * configure some properties in the dumper file
+ * 
+ * @author Jiajun
+ *
+ */
 class ConfigDumperVisitor extends ASTVisitor {
 	@Override
 	public boolean visit(FieldDeclaration node) {
@@ -193,16 +213,20 @@ class ConfigDumperVisitor extends ASTVisitor {
 			if (object instanceof VariableDeclarationFragment) {
 				VariableDeclarationFragment vdf = (VariableDeclarationFragment) object;
 				String name = vdf.getName().getFullyQualifiedName();
+				// configure the dependence (library) path and output path
 				if (name.equals("OUT_AND_LIB_PATH")) {
 					StringLiteral stringLiteral = node.getAST().newStringLiteral();
 					stringLiteral.setLiteralValue(Constant.DUMPER_OUT_AND_LIB_PATH);
 					vdf.setInitializer(stringLiteral);
+					// configure the max size of output file
 				} else if (name.equals("MAX_OUTPUT_FILE_SIZE")) {
 					NumberLiteral numberLiteral = node.getAST().newNumberLiteral(Constant.DUMPER_MAX_OUTPUT_FILE_SIZE);
 					vdf.setInitializer(numberLiteral);
+					// configure the max depth unfolded for object
 				} else if (name.equals("MAX_DEPTH")) {
 					NumberLiteral numberLiteral = node.getAST().newNumberLiteral(Constant.DUMPER_MAX_DEPTH);
 					vdf.setInitializer(numberLiteral);
+					// configure the max output length for array type object
 				} else if (name.equals("ARRAY_MAX_LENGTH")) {
 					NumberLiteral numberLiteral = node.getAST().newNumberLiteral(Constant.DUMPER_ARRAY_MAX_LENGTH);
 					vdf.setInitializer(numberLiteral);
