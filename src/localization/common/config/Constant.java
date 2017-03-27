@@ -1,5 +1,7 @@
 package localization.common.config;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
+
 /**
  * This class contains all constant variables
  * @author Jiajun
@@ -47,15 +49,45 @@ public class Constant {
 	public static String COMMAND_CODE_FORMAT = null;
 
 	// system properties
+	/**
+	 * out
+	 */
 	public final static String STR_OUT_PATH = HOME + "/out";
+	/**
+	 * out/debug.log 
+	 */
 	public final static String STR_LOG_FILE = STR_OUT_PATH + "/debug.log";
+	/**
+	 * out/d4j.out
+	 */
 	public final static String STR_TMP_D4J_OUTPUT_FILE = STR_OUT_PATH + "/d4j.out";
+	/**
+	 * out/path.out
+	 */
 	public final static String STR_TMP_INSTR_OUTPUT_FILE = STR_OUT_PATH + "/path.out";
+	/**
+	 * out/failed.test
+	 */
 	public final static String STR_FAILED_TEST_FILE = STR_OUT_PATH + "/failed.test";
+	/**
+	 * out/passed.test
+	 */
 	public final static String STR_PASSED_TEST_FILE = STR_OUT_PATH + "/passed.test";
+	/**
+	 * out/data
+	 */
 	public final static String STR_ALL_DATA_COLLECT_PATH = STR_OUT_PATH + "/data";
+	/**
+	 * out/data/negative
+	 */
 	public final static String STR_NEGATIVE_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/negative";
+	/**
+	 * out/data/positive
+	 */
 	public final static String STR_POSITIVE_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/positive";
+	/**
+	 * out/data/failed
+	 */
 	public final static String STR_FAILED_DATA_COLLECT_PATH = STR_OUT_PATH + "/data/failed";
 
 	// *********configuration for mutant generation********//

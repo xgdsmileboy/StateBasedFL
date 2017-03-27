@@ -41,11 +41,13 @@ public class Collector {
 	private DynamicRuntimeInfo _dynamicRuntimeInfo;
 	private String _testSRCPath;
 	private String _sourceSRCPath;
+	private String _projectPath;
 
 	public Collector(DynamicRuntimeInfo dynamicRuntimeInfo) {
 		_dynamicRuntimeInfo = dynamicRuntimeInfo;
 		_testSRCPath = InfoBuilder.buildTestSRCPath(_dynamicRuntimeInfo, true);
 		_sourceSRCPath = InfoBuilder.buildSourceSRCPath(_dynamicRuntimeInfo, true);
+		_projectPath = InfoBuilder.buildSingleProjectPath(dynamicRuntimeInfo);
 	}
 
 	/**
@@ -619,8 +621,20 @@ public class Collector {
 					ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommandWithTimeout(
 							_dynamicRuntimeInfo, testMethod.getFirst(), 60 * 5L), Constant.STR_TMP_D4J_OUTPUT_FILE);
 					if (isFailedTest(Constant.STR_TMP_D4J_OUTPUT_FILE)) {
-						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE,
-								Constant.STR_NEGATIVE_DATA_COLLECT_PATH);
+						// save current mutant to file, change the output path
+						// to a single one
+						String idForMutant = mutant.getReplaceSource().substring(0,
+								mutant.getReplaceSource().indexOf("/"));
+						String fileContainer = Constant.STR_NEGATIVE_DATA_COLLECT_PATH + "/" + testMethod.getFirst()
+								+ "/" + idForMutant;
+						File file = new File(fileContainer);
+						if (!file.exists()) {
+							file.mkdirs();
+						}
+						ExecuteCommand.copyFile(mutantFile, fileContainer);
+						ExecuteCommand.copyFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
+						
+						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, fileContainer);
 					}
 				}
 			}
@@ -631,10 +645,12 @@ public class Collector {
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		Instrument.execute(_sourceSRCPath, new DeInstrumentVisitor());
 	}
-	
+
 	/**
-	 * judging if the test failed based on the test output info 
-	 * @param outputFile : output file
+	 * judging if the test failed based on the test output info
+	 * 
+	 * @param outputFile
+	 *            : output file
 	 * @return
 	 */
 	private boolean isFailedTest(String outputFile) {
@@ -681,9 +697,10 @@ public class Collector {
 		}
 		return isFailed;
 	}
-	
+
 	/**
 	 * execute all test and collect all failed test
+	 * 
 	 * @return a list of failed test
 	 */
 	private List<String> collectFailedTest() {
@@ -694,7 +711,9 @@ public class Collector {
 
 	/**
 	 * collecting trace for each failed test
-	 * @param allFailedTests : all failed tests
+	 * 
+	 * @param allFailedTests
+	 *            : all failed tests
 	 * @return
 	 */
 	private List<TestMethod> collectFailedTestTrace(List<String> allFailedTests) {
@@ -718,6 +737,10 @@ public class Collector {
 
 			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, string),
 					Constant.STR_TMP_D4J_OUTPUT_FILE);
+
+			// save failing information into file
+			String fileContainer = Constant.STR_FAILED_DATA_COLLECT_PATH + Constant.PATH_SEPARATOR + methodString;
+			ExecuteCommand.moveFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
 
 			Instrument.execute(testJavaFile, new DeInstrumentVisitor(method));
 
