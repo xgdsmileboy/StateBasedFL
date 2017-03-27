@@ -382,6 +382,10 @@ public class Collector {
 					+ methodInfo[2];
 			collectFailedTestStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, testDataFile,
 					testMethod.getTestStatementNumber(), 0);
+			
+			// save failing information into file
+			ExecuteCommand.moveFile(_projectPath + "/failing_tests", testDataFile + "/failing_tests");
+
 		}
 		Instrument.execute(_testSRCPath, new DeInstrumentVisitor());
 		// this state collecting instrument can be reused for collecting
@@ -737,10 +741,6 @@ public class Collector {
 
 			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, string),
 					Constant.STR_TMP_D4J_OUTPUT_FILE);
-
-			// save failing information into file
-			String fileContainer = Constant.STR_FAILED_DATA_COLLECT_PATH + Constant.PATH_SEPARATOR + methodString;
-			ExecuteCommand.moveFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
 
 			Instrument.execute(testJavaFile, new DeInstrumentVisitor(method));
 
