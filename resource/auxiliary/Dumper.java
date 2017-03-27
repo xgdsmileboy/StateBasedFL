@@ -121,7 +121,11 @@ public class Dumper {
 		ctx.maxDepth = maxDepth;
 		ctx.maxArrayElements = maxArrayElements;
 
-		String allFields = dump(o, ctx).toString();
+		Object object = dump(o, ctx);
+		if(object == null){
+			return "{null}";
+		}
+		String allFields = object.toString();
 		// if(removeNewLine){
 		// allFields = allFields.replace("\n", "");
 		// }
