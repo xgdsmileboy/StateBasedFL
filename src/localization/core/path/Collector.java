@@ -647,7 +647,7 @@ public class Collector {
 								+ "/" + idForMutant + "/" + testMethod.getFirst();
 
 						if(collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, fileContainer)){
-							ExecuteCommand.copyFile(mutantFile, fileContainer);
+							ExecuteCommand.copyFile(originalFile, fileContainer);
 							ExecuteCommand.copyFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
 						}
 					}
