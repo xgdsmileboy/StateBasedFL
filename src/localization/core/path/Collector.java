@@ -643,16 +643,13 @@ public class Collector {
 						// to a single one
 						String idForMutant = mutant.getReplaceSource().substring(0,
 								mutant.getReplaceSource().indexOf("/"));
-						String fileContainer = Constant.STR_NEGATIVE_DATA_COLLECT_PATH + "/" + testMethod.getFirst()
-								+ "/" + idForMutant;
-						File file = new File(fileContainer);
-						if (!file.exists()) {
-							file.mkdirs();
-						}
-						ExecuteCommand.copyFile(mutantFile, fileContainer);
-						ExecuteCommand.copyFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
+						String fileContainer = Constant.STR_NEGATIVE_DATA_COLLECT_PATH 
+								+ "/" + idForMutant + "/" + testMethod.getFirst();
 
-						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, fileContainer);
+						if(collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, fileContainer)){
+							ExecuteCommand.copyFile(mutantFile, fileContainer);
+							ExecuteCommand.copyFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
+						}
 					}
 				}
 			}
@@ -781,10 +778,11 @@ public class Collector {
 		return allFailedTestMethods;
 	}
 
-	private void collectNegativeStateIntoFile(String sourceFile, String targetFileContainer) {
+	private boolean collectNegativeStateIntoFile(String sourceFile, String targetFileContainer) {
+		boolean haveDataCollected = false;
 		File file = new File(sourceFile);
 		if (!file.exists()) {
-			return;
+			return haveDataCollected;
 		}
 		Map<Integer, StringBuffer> allStates = new HashMap<>();
 		BufferedReader bufferedReader = null;
@@ -831,6 +829,7 @@ public class Collector {
 								String methodString = Identifier.getMessage(id);
 								String filePath = targetFileContainer + Constant.PATH_SEPARATOR + methodString;
 								JavaFile.writeStringToFile(filePath, message, true);
+								haveDataCollected = true;
 							}
 						}
 						allStates.remove(id);
@@ -877,6 +876,7 @@ public class Collector {
 				}
 			}
 		}
+		return haveDataCollected;
 		// if a method did not finish running, just drop the data
 		// for(Entry<Integer, StringBuffer> entry : allStates.entrySet()){
 		// StringBuffer sBuffer = entry.getValue();
