@@ -5,13 +5,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
 
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -382,7 +385,7 @@ public class Collector {
 					+ methodInfo[2];
 			collectFailedTestStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, testDataFile,
 					testMethod.getTestStatementNumber(), 0);
-			
+
 			// save failing information into file
 			ExecuteCommand.moveFile(_projectPath + "/failing_tests", testDataFile + "/failing_tests");
 
@@ -518,8 +521,19 @@ public class Collector {
 				continue;
 			}
 			String test = methodInfo[0] + "::" + methodInfo[2];
-			ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo, test),
+			// ExecuteCommand.executeDefects4JTest(InfoBuilder.buildDefects4JTestCommand(_dynamicRuntimeInfo,
+			// test),
+			// Constant.STR_TMP_D4J_OUTPUT_FILE);
+			Date begin = new Date();
+			ExecuteCommand.executeDefects4JTest(
+					InfoBuilder.buildDefects4JTestCommandWithTimeout(_dynamicRuntimeInfo, test, 60 * 5L),
 					Constant.STR_TMP_D4J_OUTPUT_FILE);
+			Date end = new Date();
+			//4 min = 4 * 60 * 1000 = 240000 millis + 0.5 min = 270000 millis
+			//if a test run exceeded 4.5 mins, there may be a large loop and leave it out. 
+			if((end.getTime() - begin.getTime()) > 270000){
+				continue;
+			}
 			Set<Integer> allClazzPath = collectClazzPath(Constant.STR_TMP_INSTR_OUTPUT_FILE);
 			allPassedTestWithFullClazzPath.add(new Pair<String, Set<Integer>>(test, allClazzPath));
 		}
@@ -637,7 +651,7 @@ public class Collector {
 						}
 						ExecuteCommand.copyFile(mutantFile, fileContainer);
 						ExecuteCommand.copyFile(_projectPath + "/failing_tests", fileContainer + "/failing_tests");
-						
+
 						collectNegativeStateIntoFile(Constant.STR_TMP_INSTR_OUTPUT_FILE, fileContainer);
 					}
 				}
