@@ -10,28 +10,22 @@ import javax.xml.transform.Templates;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AssertStatement;
-import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.BreakStatement;
 import org.eclipse.jdt.core.dom.CatchClause;
-import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.ContinueStatement;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ReturnStatement;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
@@ -39,20 +33,19 @@ import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.SynchronizedStatement;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
-import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
-import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
+
+import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
+import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators.TypedAncestorIterator;
 
 import localization.common.config.Constant;
 import localization.common.config.DynamicRuntimeInfo;
 import localization.common.config.Identifier;
 import localization.common.java.Method;
 import localization.common.util.Debugger;
-import localization.common.util.LevelLogger;
 import localization.instrument.Instrument;
 import localization.instrument.gen.GenStatement;
 import localization.instrument.gen.InsertVariableGenerator;
@@ -437,114 +430,12 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 			result.add(tryStatement);
 		} else {
 			AST ast = AST.newAST(AST.JLS8);
-			if(statement instanceof ReturnStatement){
-				ReturnStatement returnStatement = (ReturnStatement) statement;
-				Expression expression = returnStatement.getExpression();
-				if(expression != null){
-					if(expression instanceof SimpleName){
-						int index = 0;
-						for(; index < insertedNodes.size() - 1; index++){
-							result.add((Statement) ASTNode.copySubtree(ast, insertedNodes.get(index)));
-						}
-						//insert a statement for printing the return value
-						result.add(GenStatement.genVariableDumpMethodInvation(message, ((SimpleName)expression).getFullyQualifiedName()));
-						
-						result.add((Statement) ASTNode.copySubtree(ast, insertedNodes.get(index)));
-						
-						result.add((Statement) ASTNode.copySubtree(ast, statement));
-						
-					} else {
-					
-						ASTNode parent = returnStatement.getParent();
-						while(parent != null){
-							if(parent instanceof MethodDeclaration){
-								break;
-							}
-							parent = parent.getParent();
-						}
-						if(parent == null){
-							LevelLogger.error("@StateCollectInstrumentVisitor : return cannot get method declaration for return statement" + statement);
-							System.exit(0);
-						}
-						MethodDeclaration containMethod = (MethodDeclaration) parent;
-						Type type = containMethod.getReturnType2();
-						if(type ==  null){
-							LevelLogger.error("@StateCollectInstrumentVisitor : return type is null while return expression is not : " + statement);
-							System.exit(0);
-						}
-						
-						VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
-						SimpleName simpleName = ast.newSimpleName("wo_shi_lin_shi_de");
-						fragment.setName(simpleName);
-						Expression initializer = (Expression) ASTNode.copySubtree(ast, expression);
-						fragment.setInitializer(initializer);
-						Type retType = (Type) ASTNode.copySubtree(ast, type);
-						VariableDeclarationStatement vds = ast.newVariableDeclarationStatement(fragment);
-						vds.setType(retType);
-						result.add(vds);
-						
-						int index = 0;
-						for(; index < insertedNodes.size() - 1; index++){
-							result.add((Statement) ASTNode.copySubtree(ast, insertedNodes.get(index)));
-						}
-						//insert a statement for printing the return value
-						result.add(GenStatement.genVariableDumpMethodInvation(message, "wo_shi_lin_shi_de"));
-						
-						result.add((Statement) ASTNode.copySubtree(ast, insertedNodes.get(index)));
-						
-						result.add(GenStatement.genReturnStatement("wo_shi_lin_shi_de"));
-					}
-				} else {
-					for(Statement insert : insertedNodes){
-						result.add((Statement) ASTNode.copySubtree(ast, insert));
-					}
-					result.add((Statement) ASTNode.copySubtree(ast, statement));
+			if(statement instanceof ReturnStatement || statement instanceof ThrowStatement){
+				for(Statement insert : insertedNodes){
+					result.add((Statement) ASTNode.copySubtree(ast, insert));
 				}
-			} else if(statement instanceof ThrowStatement){
-				ThrowStatement throwStatement = (ThrowStatement) statement;
-				Expression expression = throwStatement.getExpression();
-				if(expression != null){
-					Type throwType = null;
-					if(expression instanceof ClassInstanceCreation){
-						ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
-						throwType = (Type) ASTNode.copySubtree(ast, classInstanceCreation.getType());
-						
-					} else {
-						throwType = ast.newSimpleType(ast.newName("Exception"));
-					}
-					
-					VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
-					SimpleName simpleName = ast.newSimpleName("wo_shi_lin_shi_de");
-					fragment.setName(simpleName);
-					Expression initializer = (Expression) ASTNode.copySubtree(ast, expression);
-					fragment.setInitializer(initializer);
-					VariableDeclarationStatement vds = ast.newVariableDeclarationStatement(fragment);
-					vds.setType(throwType);
-					result.add(vds);
-					
-					RuntimeException aException = new RuntimeException("");
-					
-					int index = 0;
-					for(; index < insertedNodes.size() - 1; index++){
-						result.add((Statement) ASTNode.copySubtree(ast, insertedNodes.get(index)));
-					}
-					//insert a statement for printing the return value
-					result.add(GenStatement.genVariableDumpMethodInvation(message, "wo_shi_lin_shi_de"));
-					
-					result.add((Statement) ASTNode.copySubtree(ast, insertedNodes.get(index)));
-					
-					result.add(GenStatement.genThrowStatement("wo_shi_lin_shi_de"));
-					
-				} else {
-					for(Statement insert : insertedNodes){
-						result.add((Statement) ASTNode.copySubtree(ast, insert));
-					}
-					result.add((Statement) ASTNode.copySubtree(ast, statement));
-				}
-				
-			} else {
-				result.add((Statement) ASTNode.copySubtree(ast, statement));
 			}
+			result.add((Statement) ASTNode.copySubtree(ast, statement));
 		}
 
 		return result;
@@ -571,6 +462,7 @@ public class StateCollectInstrumentVisitor extends TraversalVisitor {
 		}
 		return newBlock;
 	}
+
 	
 	public static void main(String[] args) {
 		DynamicRuntimeInfo dynamicRuntimeInfo = new DynamicRuntimeInfo("lang", 28);

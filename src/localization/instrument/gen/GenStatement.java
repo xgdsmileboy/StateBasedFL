@@ -17,10 +17,12 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.ThisExpression;
+import org.eclipse.jdt.core.dom.ThrowStatement;
 
 public class GenStatement {
 
@@ -300,6 +302,19 @@ public class GenStatement {
 		infixExpression.setRightOperand(methodInvocation);
 		
 		return genPrinter(infixExpression);
+	}
+	
+	public static Statement genReturnStatement(String varName){
+		ReturnStatement returnStatement = ast.newReturnStatement();
+		SimpleName simpleName = ast.newSimpleName(varName);
+		returnStatement.setExpression(simpleName);
+		return returnStatement;
+	}
+	
+	public static Statement genThrowStatement(String varName){
+		ThrowStatement throwStatement = ast.newThrowStatement();
+		throwStatement.setExpression(ast.newSimpleName(varName));
+		return throwStatement;
 	}
 
 }
